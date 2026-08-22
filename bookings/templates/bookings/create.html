@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+{% block title %}Book {{ service.title }} — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <div class="mb-6 flex flex-col gap-3">
+    {% include "components/back_button.html" with url_name="services:public_detail" url_args=service.pk label="Back to Service Details" %}
+  </div>
+
+  <form method="post" id="booking-form" class="provia-form">
+    {% csrf_token %}
+
+    <div class="grid gap-8 lg:grid-cols-12 items-start">
+      <!-- Left Column: Service Context & Booking Inputs -->
+      <div class="lg:col-span-7 xl:col-span-8 space-y-6">
+        <!-- Service Context Card -->
+        <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span class="inline-flex items-center rounded-md bg-[#292a28] border border-[#343533] px-3 py-1 text-xs font-semibold text-[#b4cdb8]">
+              {{ service.category.name }}
+            </span>
+            <span class="font-mono text-xs text-[#a4aba4] font-medium">
+              Duration: <strong class="text-[#e9ebe7]">{{ service.duration_minutes }} min</strong>
+            </span>
+          </div>
+
+          <h1 class="mt-4 font-display text-2xl sm:text-3xl font-bold text-[#e9ebe7]">
+            {{ service.title }}
+          </h1>
+
+          <p class="mt-2 text-sm sm:text-base font-semibold text-[#dfc38f]">
+            Provided by {{ service.provider.business_name|default:service.provider.user.username }}
+          </p>
+
+          {% if service.location %}
+            <div class="mt-4 pt-4 border-t border-[#343533] flex items-center gap-2 text-xs text-[#a4aba4]">
+              <svg class="h-4 w-4 text-[#8d928c] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>
+                {% if service.location.address %}{{ service.location.address }}, {% endif %}
+                {{ service.location.city }}, {{ service.location.state }}
+                {% if service.location.postal_code %}({{ service.location.postal_code }}){% endif %}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Schedule & Form Inputs Card -->
+        <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8 space-y-6">
+          <div>
+            <h2 class="font-display text-xl font-bold text-[#e9ebe7]">
+              Select Date &amp; Time
+            </h2>
+            <p class="mt-1 text-xs text-[#a4aba4]">
+              Choose an available date and preferred appointment time window.
+            </p>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm font-medium text-red-400">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <!-- Date Selection Field -->
+          <div>
+            <label for="{{ form.booking_date.id_for_label }}" class="block text-xs font-semibold uppercase tracking-wider text-[#a4aba4] mb-2">
+              Appointment Date <span class="text-[#dfc38f]">*</span>
+            </label>
+            {{ form.booking_date }}
+            <p class="mt-1.5 text-xs text-[#6f756f]">
+              Select a future calendar date to query real-time provider openings.
+            </p>
+            {% for error in form.booking_date.errors %}
+              <p class="mt-1.5 text-xs font-mono text-red-400">{{ error }}</p>
+            {% endfor %}
+          </div>
+
+          <!-- Hidden start_time input -->
+          {{ form.start_time }}
+          {% for error in form.start_time.errors %}
+            <p class="mt-1.5 text-xs font-mono text-red-400">{{ error }}</p>
+          {% endfor %}
+
+          <!-- Available Time Slots -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#a4aba4] mb-2">
+              Available Time Slots <span class="text-[#dfc38f]">*</span>
+            </label>
+
+            <div id="slots-container" class="rounded-lg border border-[#343533] bg-[#121412] p-5">
+              <p id="slots-status" class="text-xs font-medium text-[#a4aba4]">
+                Select a date above to view available time slots.
+              </p>
+              <div id="slots-grid" class="mt-3 hidden grid grid-cols-2 gap-2.5 sm:grid-cols-3"></div>
+            </div>
+          </div>
+
+          <!-- Customer Notes Field -->
+          <div class="border-t border-[#343533] pt-6">
+            <label for="{{ form.customer_notes.id_for_label }}" class="block text-xs font-semibold uppercase tracking-wider text-[#a4aba4] mb-2">
+              Customer Notes <span class="text-[#6f756f] text-[10px] font-normal lowercase">(optional)</span>
+            </label>
+            {{ form.customer_notes }}
+            <p class="mt-1.5 text-xs text-[#6f756f]">
+              Add any specific requirements, entry instructions, or context for the provider.
+            </p>
+            {% for error in form.customer_notes.errors %}
+              <p class="mt-1.5 text-xs font-mono text-red-400">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Booking Summary & Action -->
+      <div class="lg:col-span-5 xl:col-span-4">
+        <aside class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 lg:sticky lg:top-24 space-y-6">
+          <div class="border-b border-[#343533] pb-4">
+            <h2 class="font-display text-lg font-bold text-[#e9ebe7]">
+              Booking Summary
+            </h2>
+            <p class="mt-1 text-xs text-[#a4aba4]">
+              Review your appointment specifications before confirming.
+            </p>
+          </div>
+
+          <!-- Summary Items -->
+          <div class="space-y-4 text-sm">
+            <div>
+              <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Service</p>
+              <p class="mt-0.5 font-semibold text-[#e9ebe7]">{{ service.title }}</p>
+            </div>
+
+            <div>
+              <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Provider</p>
+              <p class="mt-0.5 font-semibold text-[#dfc38f]">
+                {{ service.provider.business_name|default:service.provider.user.username }}
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-t border-[#343533] pt-4">
+              <div>
+                <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Date</p>
+                <p id="summary-date" class="mt-0.5 font-mono text-xs font-semibold text-[#e9ebe7]">
+                  Not selected
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Time Slot</p>
+                <p id="summary-time" class="mt-0.5 font-mono text-xs font-semibold text-[#e9ebe7]">
+                  Not selected
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-t border-[#343533] pt-4">
+              <div>
+                <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Duration</p>
+                <p class="mt-0.5 font-mono text-xs font-semibold text-[#c3c8c1]">
+                  {{ service.duration_minutes }} minutes
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">Category</p>
+                <p class="mt-0.5 text-xs font-medium text-[#c3c8c1] truncate">
+                  {{ service.category.name }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="border-t border-[#343533] pt-4">
+              <div class="flex items-baseline justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-[#a4aba4]">Total Price</span>
+                <span class="font-mono text-3xl font-bold text-[#e9ebe7]">₹{{ service.price }}</span>
+              </div>
+              <p class="mt-1 text-right text-[11px] text-[#6f756f]">
+                Fixed service rate · Taxes included
+              </p>
+            </div>
+          </div>
+
+          <!-- Trust & Status Note -->
+          <div class="rounded-lg bg-[#121412] border border-[#343533] p-3 text-xs text-[#a4aba4] flex items-start gap-2">
+            <svg class="h-4 w-4 text-[#b4cdb8] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Creates a pending booking request. You can review details and proceed to payment on the next step.</span>
+          </div>
+
+          <!-- Submit CTA -->
+          <div class="space-y-3 pt-2">
+            <button
+              type="submit"
+              id="submit-btn"
+              disabled
+              class="btn btn-primary w-full py-3 text-sm font-bold tracking-wide shadow-sm disabled:cursor-not-allowed disabled:opacity-40 disabled:bg-[#292a29] disabled:text-[#6f756f] disabled:border-[#343533]"
+            >
+              Confirm &amp; Create Booking
+            </button>
+
+            <a
+              href="{% url 'services:public_detail' service.pk %}"
+              class="btn btn-outline w-full py-2.5 text-xs font-medium text-center"
+            >
+              Cancel &amp; Return
+            </a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dateInput = document.getElementById("{{ form.booking_date.id_for_label }}");
+    const startTimeInput = document.getElementById("{{ form.start_time.id_for_label }}");
+    const slotsStatus = document.getElementById("slots-status");
+    const slotsGrid = document.getElementById("slots-grid");
+    const submitBtn = document.getElementById("submit-btn");
+    const summaryDate = document.getElementById("summary-date");
+    const summaryTime = document.getElementById("summary-time");
+
+    const today = new Date().toISOString().split("T")[0];
+    if (dateInput) {
+      dateInput.setAttribute("min", today);
+    }
+
+    const baseUrl = "{% url 'bookings:available_slots' service.pk %}";
+
+    function formatDateDisplay(dateString) {
+      if (!dateString) return "Not selected";
+      try {
+        const parts = dateString.split("-");
+        if (parts.length === 3) {
+          const d = new Date(parts[0], parts[1] - 1, parts[2]);
+          return d.toLocaleDateString("en-US", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+        }
+      } catch (e) {}
+      return dateString;
+    }
+
+    function fetchSlots(selectedDate) {
+      if (summaryDate) {
+        summaryDate.textContent = formatDateDisplay(selectedDate);
+      }
+
+      if (!selectedDate) {
+        slotsStatus.textContent = "Select a date above to view available time slots.";
+        slotsStatus.className = "text-xs font-medium text-[#a4aba4]";
+        slotsGrid.classList.add("hidden");
+        slotsGrid.innerHTML = "";
+        startTimeInput.value = "";
+        if (summaryTime) summaryTime.textContent = "Not selected";
+        submitBtn.disabled = true;
+        return;
+      }
+
+      slotsStatus.textContent = "Checking available time slots...";
+      slotsStatus.className = "text-xs font-medium text-[#dfc38f]";
+      slotsGrid.classList.add("hidden");
+      slotsGrid.innerHTML = "";
+      startTimeInput.value = "";
+      if (summaryTime) summaryTime.textContent = "Not selected";
+      submitBtn.disabled = true;
+
+      const url = `${baseUrl}?date=${encodeURIComponent(selectedDate)}`;
+
+      fetch(url, {
+        headers: {
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then(function (response) {
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            return response.json().then(function (data) {
+              if (!response.ok) {
+                throw new Error(data.error || "Failed to load slots.");
+              }
+              return data;
+            });
+          }
+
+          if (response.status === 403) {
+            throw new Error("Only customer accounts can view available slots.");
+          }
+          if (response.status === 404) {
+            throw new Error("Service or availability not found.");
+          }
+          throw new Error("Failed to load slots. Please refresh or try again.");
+        })
+        .then(function (slots) {
+          if (!Array.isArray(slots) || slots.length === 0) {
+            slotsStatus.textContent = "No available slots for this date. Please select another date.";
+            slotsStatus.className = "text-xs font-medium text-[#a4aba4]";
+            return;
+          }
+
+          slotsStatus.classList.add("hidden");
+          slotsGrid.classList.remove("hidden");
+
+          const unselectedBtnClass =
+            "w-full rounded-lg border border-[#343533] bg-[#1b1c1a] p-3 text-center text-xs font-mono font-medium text-[#c3c8c1] transition hover:border-[#8d928c] hover:bg-[#292a29] focus:outline-none cursor-pointer";
+          const selectedBtnClass =
+            "w-full rounded-lg border-2 border-[#b4cdb8] bg-[#b4cdb8]/15 p-3 text-center text-xs font-mono font-bold text-[#b4cdb8] shadow-xs focus:outline-none ring-1 ring-[#b4cdb8] cursor-pointer";
+
+          slots.forEach(function (slot) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = unselectedBtnClass;
+            btn.textContent = `${slot.start_time} – ${slot.end_time}`;
+            btn.dataset.startTime = slot.start_time;
+            btn.dataset.slotLabel = `${slot.start_time} – ${slot.end_time}`;
+
+            btn.addEventListener("click", function () {
+              const allBtns = slotsGrid.querySelectorAll("button");
+              allBtns.forEach(function (b) {
+                b.className = unselectedBtnClass;
+              });
+
+              btn.className = selectedBtnClass;
+              startTimeInput.value = slot.start_time;
+              if (summaryTime) {
+                summaryTime.textContent = `${slot.start_time} – ${slot.end_time}`;
+              }
+              submitBtn.disabled = false;
+            });
+
+            slotsGrid.appendChild(btn);
+          });
+        })
+        .catch(function (err) {
+          slotsStatus.textContent = err.message || "Failed to load available times.";
+          slotsStatus.className = "text-xs font-medium text-red-400";
+        });
+    }
+
+    if (dateInput) {
+      dateInput.addEventListener("change", function () {
+        fetchSlots(this.value);
+      });
+
+      if (dateInput.value) {
+        fetchSlots(dateInput.value);
+      }
+    }
+  });
+</script>
+{% endblock %}

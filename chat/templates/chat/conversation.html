@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ other_party_name }} — {{ conversation.booking.service.title }} — Provia Chat{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div
+    class="flex flex-col h-screen w-screen overflow-hidden bg-[#000000] text-[#DAE2FD] font-sans antialiased select-none"
+    data-chat-root
+    data-conversation-id="{{ conversation.id }}"
+    data-user-id="{{ request.user.id }}"
+    data-user-name="{{ request.user.get_full_name|default:request.user.username }}"
+    data-other-name="{{ other_party_name }}"
+>
+    <!-- TopAppBar (Desktop Web) -->
+    <header class="hidden md:flex justify-between items-center px-6 py-3 w-full bg-[#171F33] border-b border-[#3C4A46] h-16 shrink-0 z-30">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'home' %}" class="flex items-center gap-2.5 text-decoration-none">
+                <span class="material-symbols-outlined text-[#57F1DB] font-bold text-2xl" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+                <h1 class="text-xl font-bold text-[#DAE2FD] tracking-tight font-display">Provia</h1>
+            </a>
+        </div>
+
+        <!-- Web Navigation Tabs -->
+        <nav class="flex items-center gap-2">
+            <a href="{% url 'chat:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2D3449] text-[#57F1DB] font-semibold text-sm transition-colors">
+                <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">chat</span>
+                Chat
+            </a>
+            <a href="{% if user.role == 'provider' %}{% url 'dashboard:provider' %}{% else %}{% url 'dashboard:customer' %}{% endif %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors">
+                <span class="material-symbols-outlined text-base">dashboard</span>
+                Dashboard
+            </a>
+            <a href="{% url 'notifications:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors relative">
+                <span class="material-symbols-outlined text-base">notifications</span>
+                Notifications
+                {% if unread_notification_count > 0 %}
+                    <span class="w-2 h-2 rounded-full bg-[#57F1DB]"></span>
+                {% endif %}
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors">
+                <span class="material-symbols-outlined text-base">settings</span>
+                Settings
+            </a>
+        </nav>
+
+        <form action="{% url 'accounts:logout' %}" method="post" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="flex items-center gap-1.5 text-xs text-[#BACAC5] hover:text-[#FFB4AB] transition-colors cursor-pointer bg-transparent border-none">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </button>
+        </form>
+    </header>
+
+    <!-- Mobile Top Header -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 bg-[#0F172A] border-b border-[#334155] h-14 shrink-0 z-20">
+        <div class="flex items-center gap-2">
+            <a href="{% url 'chat:list' %}" class="text-[#BACAC5] hover:text-[#DAE2FD] p-1 -ml-1">
+                <span class="material-symbols-outlined text-xl">arrow_back</span>
+            </a>
+            <div class="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-[#334155] bg-[#171F33] flex items-center justify-center text-[#57F1DB] font-bold text-xs">
+                {{ other_party_name|slice:":2"|upper }}
+            </div>
+            <div class="min-w-0">
+                <h1 class="text-sm font-bold text-[#DAE2FD] truncate font-display">{{ other_party_name }}</h1>
+                <p class="text-[10px] font-mono text-[#57F1DB] truncate">#{{ conversation.booking.id }} &bull; {{ conversation.booking.service.title }}</p>
+            </div>
+        </div>
+        <button
+            type="button"
+            id="pv-mobile-info-btn"
+            class="w-8 h-8 rounded-lg flex items-center justify-center border border-[#334155] bg-[#1E293B] text-[#57F1DB] text-xs"
+            title="Booking Info"
+        >
+            <span class="material-symbols-outlined text-base">receipt_long</span>
+        </button>
+    </header>
+
+    <!-- Main Content Area: 3-Pane Desktop Workspace (LEFT, CENTER, RIGHT) -->
+    <main class="flex-1 flex overflow-hidden w-full relative">
+        <!-- ============================================================
+             PANE 1: Left Conversation List (Width 300px-320px)
+             ============================================================ -->
+        <aside class="hidden md:flex flex-col w-[280px] lg:w-[320px] bg-[#0F172A] border-r border-[#334155] shrink-0 h-full select-text">
+            <!-- Search Header -->
+            <div class="p-3.5 border-b border-[#334155]">
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-[#BACAC5]/60 text-lg pointer-events-none">search</span>
+                    <input
+                        type="text"
+                        id="conv-search-input"
+                        class="w-full bg-[#1E293B] border border-[#334155] rounded-xl py-1.5 pl-9 pr-3 text-xs text-[#DAE2FD] focus:outline-none focus:border-[#57F1DB] focus:ring-1 focus:ring-[#57F1DB] transition-all placeholder:text-[#BACAC5]/50"
+                        placeholder="Search conversations..."
+                    />
+                </div>
+            </div>
+
+            <!-- Thread List Items -->
+            <div class="flex-1 overflow-y-auto obsidian-scrollbar divide-y divide-[#334155]/40" id="conv-list-items">
+                {% for conv in conversations %}
+                    <a
+                        href="{% url 'chat:conversation' conv.id %}"
+                        class="flex items-center gap-3 p-3.5 transition-colors border-l-2 {% if conv.id == conversation.id %}bg-[#1E293B] border-l-[#57F1DB]{% else %}border-l-transparent hover:bg-[#1E293B]/50{% endif %}"
+                        data-conv-item
+                        data-conv-name="{{ conv.other_party_name|lower }}"
+                        data-conv-service="{{ conv.booking.service.title|lower }}"
+                    >
+                        <div class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#334155] bg-[#171F33] flex items-center justify-center text-[#57F1DB] font-bold text-xs">
+                            {{ conv.other_party_name|slice:":2"|upper }}
+                            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#57F1DB] rounded-full border-2 border-[#0F172A]"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-0.5">
+                                <span class="text-xs lg:text-sm font-bold truncate {% if conv.id == conversation.id %}text-[#DAE2FD]{% else %}text-[#DAE2FD]/90{% endif %}">
+                                    {{ conv.other_party_name }}
+                                </span>
+                                {% if conv.latest_message %}
+                                    <span class="text-[10px] font-mono {% if conv.id == conversation.id %}text-[#57F1DB]{% else %}text-[#BACAC5]{% endif %} shrink-0">
+                                        {{ conv.latest_message.created_at|date:"H:i" }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-[11px] text-[#BACAC5]/80 truncate font-mono mb-0.5">
+                                {{ conv.booking.service.title }} &bull; #{{ conv.booking_id }}
+                            </div>
+                            <div class="flex justify-between items-center gap-1.5">
+                                <p class="text-xs {% if conv.unread_count > 0 %}text-[#DAE2FD] font-semibold{% else %}text-[#BACAC5]/70{% endif %} truncate">
+                                    {% if conv.latest_message %}
+                                        {% if conv.latest_message.content|slice:":8" == "[SYSTEM]" %}
+                                            <span class="text-[#57F1DB]">&bull; Service Completed</span>
+                                        {% else %}
+                                            {{ conv.latest_message.content }}
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="italic text-[#BACAC5]/40">No messages yet</span>
+                                    {% endif %}
+                                </p>
+                                {% if conv.unread_count > 0 %}
+                                    <span class="w-2 h-2 rounded-full bg-[#57F1DB] shrink-0"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="p-8 text-center text-[#BACAC5]">
+                        <span class="material-symbols-outlined text-3xl mb-2 text-[#BACAC5]/50">forum</span>
+                        <p class="text-xs">No active threads</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             PANE 2: Center Active Conversation Window (Fluid Expansion)
+             ============================================================ -->
+        <section class="flex-1 flex flex-col bg-[#000000] relative h-full overflow-hidden min-w-0 select-text">
+            <!-- Active Conversation Sub-Header (Stitch Style) -->
+            <div class="h-16 flex items-center justify-between px-4 md:px-6 bg-[#0F172A] border-b border-[#334155] shrink-0 z-10 shadow-sm">
+                <div class="flex items-center gap-3 min-w-0">
+                    <a
+                        href="{% url 'chat:list' %}"
+                        class="md:hidden text-[#BACAC5] hover:text-[#DAE2FD] p-1 -ml-1 transition-colors"
+                        title="Back to inbox"
+                    >
+                        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+                    </a>
+
+                    <div class="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#334155] bg-[#171F33] flex items-center justify-center text-[#57F1DB] font-bold text-sm">
+                        {{ other_party_name|slice:":2"|upper }}
+                        <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#57F1DB] rounded-full border-2 border-[#0F172A]"></div>
+                    </div>
+
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm md:text-base font-bold text-[#DAE2FD] truncate">{{ other_party_name }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-[#57F1DB] font-mono truncate">{{ conversation.booking.service.title }} &bull; #{{ conversation.booking.id }}</span>
+                            <span class="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-[#57F1DB]"></span>
+                            <span class="hidden sm:inline-block text-[11px] text-[#BACAC5]">Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Action Icons & Mobile Details Toggle -->
+                <div class="flex items-center gap-1.5">
+                    <!-- Live Connection Status Pill -->
+                    <div id="chat-connection-status" class="hidden text-[10px] font-mono px-2 py-0.5 rounded border">
+                        Connecting...
+                    </div>
+
+                    <button type="button" class="w-9 h-9 rounded-full hidden sm:flex items-center justify-center text-[#BACAC5] hover:bg-[#1E293B] hover:text-[#DAE2FD] transition-colors cursor-pointer bg-transparent border-none" title="Voice Call">
+                        <span class="material-symbols-outlined text-lg">call</span>
+                    </button>
+                    <button type="button" class="w-9 h-9 rounded-full hidden sm:flex items-center justify-center text-[#BACAC5] hover:bg-[#1E293B] hover:text-[#DAE2FD] transition-colors cursor-pointer bg-transparent border-none" title="Video Call">
+                        <span class="material-symbols-outlined text-lg">videocam</span>
+                    </button>
+
+                    <!-- Mobile Booking Context Slide-over Toggle (< lg) -->
+                    <button
+                        type="button"
+                        id="pv-info-toggle-btn"
+                        class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#334155] bg-[#1E293B] text-xs font-mono text-[#57F1DB] hover:bg-[#222A3D] hover:border-[#57F1DB]/50 transition-colors cursor-pointer sm:ml-1"
+                        title="View Booking Context"
+                        aria-label="Toggle booking details"
+                    >
+                        <span class="material-symbols-outlined text-sm">receipt_long</span>
+                        <span class="hidden sm:inline">Booking Info</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="chat-error-banner" class="hidden mx-4 mt-3 rounded-lg border border-[#FFB4AB]/40 bg-[#FFB4AB]/10 p-2.5 font-mono text-xs text-[#FFB4AB]"></div>
+
+            <!-- Messages Stream (Canvas #000000) -->
+            <div
+                id="chat-messages"
+                class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-4 bg-[#000000] obsidian-scrollbar relative pb-20 md:pb-6"
+                tabindex="0"
+                aria-label="Conversation messages"
+            >
+                <!-- Date Divider -->
+                <div class="flex items-center justify-center my-2">
+                    <div class="h-px bg-[#334155] flex-1"></div>
+                    <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-[#BACAC5] font-mono">CONVERSATION THREAD</span>
+                    <div class="h-px bg-[#334155] flex-1"></div>
+                </div>
+
+                {% for message in chat_messages %}
+                    {% if message.content|slice:":8" == "[SYSTEM]" %}
+                        <!-- System Message (§9 Stitch visual system) -->
+                        <div class="stitch-sys-message my-4 flex flex-col items-center justify-center text-center px-4" data-message-id="{{ message.id }}">
+                            <div class="w-full max-w-md border-t border-[#334155]"></div>
+                            <div class="py-2 font-mono text-xs font-bold text-[#57F1DB] uppercase tracking-wider flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">verified</span>
+                                <span>SERVICE COMPLETED</span>
+                            </div>
+                            <p class="text-xs text-[#BACAC5] max-w-md">
+                                Your service request #{{ conversation.booking.id }} has been marked as officially completed.
+                            </p>
+                            <div class="w-full max-w-md border-t border-[#334155] mt-2"></div>
+                        </div>
+                    {% else %}
+                        <!-- Message Bubble (Stitch Style) -->
+                        <div
+                            class="pv-message-row {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %} stitch-msg-enter"
+                            data-message-id="{{ message.id }}"
+                            data-sender-id="{{ message.sender_id }}"
+                        >
+                            <div class="pv-message-group {% if message.sender == request.user %}items-end{% else %}items-start{% endif %}">
+                                <div class="pv-message-bubble {% if message.sender == request.user %}bg-[#4F46E5] border border-[#4338CA] text-white rounded-2xl rounded-tr-xs{% else %}bg-[#1E293B] border border-[#334155] text-[#DAE2FD] rounded-2xl rounded-tl-xs{% endif %} px-4 py-2.5 shadow-sm">
+                                    {% if message.sender != request.user %}
+                                        <span class="pv-message-sender text-[11px] font-mono text-[#BACAC5]">
+                                            {{ message.sender.get_full_name|default:message.sender.username }}
+                                        </span>
+                                    {% endif %}
+                                    <p class="text-sm whitespace-pre-wrap break-words leading-relaxed">{{ message.content }}</p>
+                                    <div class="pv-message-meta flex items-center justify-end gap-1">
+                                        <span class="text-[10px] font-mono text-[#BACAC5]">{{ message.created_at|date:"H:i" }}</span>
+                                        {% if message.sender == request.user %}
+                                            <span class="pv-msg-status material-symbols-outlined text-[14px] text-[#57F1DB]">
+                                                {% if message.is_read %}done_all{% else %}check{% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <!-- Empty Conversation State -->
+                    <div class="my-auto py-12 text-center" data-empty-state>
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#1E293B] border border-[#334155] text-[#57F1DB] mb-3">
+                            <span class="material-symbols-outlined text-2xl">forum</span>
+                        </div>
+                        <p class="font-bold text-sm text-[#DAE2FD]">Start of Conversation</p>
+                        <p class="mt-1 text-xs text-[#BACAC5] max-w-sm mx-auto">
+                            Coordinate booking details, schedule adjustments, or ask questions with {{ other_party_name }}.
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Typing Indicator (Stitch Exact Animation) -->
+            <div id="pv-typing-indicator" class="hidden px-6 py-2 bg-[#000000] flex items-center gap-2.5">
+                <div class="bg-[#1E293B] border border-[#334155] text-[#DAE2FD] rounded-xl rounded-tl-xs px-3 py-2 shadow-sm flex items-center gap-1.5 h-[34px]">
+                    <div class="w-1.5 h-1.5 bg-[#BACAC5] rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-[#BACAC5] rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-[#BACAC5] rounded-full typing-dot"></div>
+                </div>
+                <span id="pv-typing-text" class="text-xs text-[#BACAC5] italic font-mono"></span>
+            </div>
+
+            <!-- Scrolled-up Floating New Message Pill -->
+            <div id="pv-scroll-bottom-pill" class="hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-20">
+                <button
+                    type="button"
+                    class="flex items-center gap-2 rounded-full border border-[#334155] bg-[#1E293B] px-4 py-1.5 text-xs font-mono text-[#57F1DB] shadow-xl hover:bg-[#2D3449] transition cursor-pointer"
+                >
+                    <span class="material-symbols-outlined text-sm">arrow_downward</span>
+                    <span id="pv-new-msg-count">1 new message</span>
+                </button>
+            </div>
+
+            <!-- Attachment Compact Preview Bar -->
+            <div id="pv-attachment-preview-bar" class="hidden px-4 py-2 bg-[#0F172A] border-t border-[#334155] flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div id="pv-preview-thumbnail-container" class="h-10 w-10 rounded-lg border border-[#334155] bg-[#1E293B] flex items-center justify-center font-mono text-[10px] text-[#57F1DB] overflow-hidden shrink-0">
+                        IMG
+                    </div>
+                    <div class="min-w-0">
+                        <p id="pv-preview-filename" class="text-xs text-[#DAE2FD] truncate font-medium"></p>
+                        <p id="pv-preview-filesize" class="text-[10px] font-mono text-[#BACAC5]"></p>
+                    </div>
+                </div>
+                <button type="button" id="pv-preview-remove-btn" class="text-xs font-mono text-[#FFB4AB] hover:underline px-2 py-1 cursor-pointer bg-transparent border-none">
+                    Remove
+                </button>
+            </div>
+
+            <!-- Composer Area (Stitch Dark Composer) -->
+            <div class="p-3 md:p-4 bg-[#0F172A] border-t border-[#334155] shrink-0 relative">
+                <!-- Attachment Popover Menu -->
+                <div id="pv-attachment-menu" class="hidden absolute bottom-20 left-4 z-30 w-48 rounded-xl border border-[#334155] bg-[#1E293B] p-2 shadow-2xl">
+                    <button
+                        type="button"
+                        id="pv-attach-image-btn"
+                        class="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#DAE2FD] hover:bg-[#2D3449] transition cursor-pointer bg-transparent border-none text-left"
+                    >
+                        <span class="material-symbols-outlined text-base text-[#57F1DB]">image</span>
+                        <span>Attach image</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="pv-attach-video-btn"
+                        class="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#DAE2FD] hover:bg-[#2D3449] transition cursor-pointer bg-transparent border-none text-left"
+                    >
+                        <span class="material-symbols-outlined text-base text-[#2DD4BF]">videocam</span>
+                        <span>Attach video</span>
+                    </button>
+                </div>
+
+                <!-- Emoji Popover Menu -->
+                <div id="pv-emoji-menu" class="hidden absolute bottom-20 right-14 z-30 rounded-xl border border-[#334155] bg-[#1E293B] p-2 shadow-2xl flex items-center gap-2">
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">👍</button>
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">😊</button>
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">🔧</button>
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">📍</button>
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">⭐</button>
+                    <button type="button" class="pv-emoji-pick hover:scale-125 transition-transform text-lg cursor-pointer bg-transparent border-none p-1">🙏</button>
+                </div>
+
+                <!-- Hidden file inputs -->
+                <input type="file" id="pv-file-image-input" class="hidden" accept="image/*" />
+                <input type="file" id="pv-file-video-input" class="hidden" accept="video/*" />
+
+                <form id="chat-form" class="flex items-end gap-2 bg-[#0F172A] p-1.5 rounded-xl border border-[#334155] focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] transition-all">
+                    <!-- + Menu Trigger -->
+                    <button
+                        type="button"
+                        id="pv-plus-menu-btn"
+                        class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-[#BACAC5] hover:bg-[#1E293B] hover:text-[#57F1DB] transition-colors cursor-pointer bg-transparent border-none mb-0.5"
+                        title="Add attachment"
+                        aria-label="Add attachment"
+                    >
+                        <span class="material-symbols-outlined">add_circle</span>
+                    </button>
+
+                    <!-- Text input -->
+                    <textarea
+                        id="chat-message-input"
+                        placeholder="Type a message..."
+                        class="flex-1 max-h-32 bg-transparent border-none outline-none resize-none text-[#DAE2FD] placeholder:text-[#BACAC5]/50 py-2.5 text-sm leading-relaxed min-h-[44px] focus:ring-0"
+                        rows="1"
+                        style="scrollbar-width: thin;"
+                    ></textarea>
+
+                    <!-- Emoji & Send button group -->
+                    <div class="flex items-center gap-1 mb-0.5 shrink-0">
+                        <button
+                            type="button"
+                            id="pv-emoji-btn"
+                            class="w-8 h-8 rounded-full flex items-center justify-center text-[#BACAC5] hover:bg-[#1E293B] hover:text-[#DAE2FD] transition-colors cursor-pointer bg-transparent border-none"
+                            title="Add emoji"
+                            aria-label="Add emoji"
+                        >
+                            <span class="material-symbols-outlined text-sm">mood</span>
+                        </button>
+                        <button
+                            type="submit"
+                            id="chat-send-button"
+                            class="w-10 h-10 rounded-full flex items-center justify-center bg-[#57F1DB] text-[#0F172A] hover:bg-[#3CDDC7] transition-colors shadow-sm font-bold cursor-pointer border-none"
+                            title="Send message"
+                        >
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-1.5 hidden md:block">
+                    <span class="text-[10px] font-mono text-[#BACAC5] opacity-60">Press Enter to send, Shift+Enter for new line</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             PANE 3: Right Booking Context Panel (Desktop In-Flow 3-Pane)
+             ============================================================ -->
+        <aside class="hidden lg:flex flex-col w-[280px] xl:w-[320px] bg-[#0F172A] border-l border-[#334155] shrink-0 h-full overflow-y-auto obsidian-scrollbar p-4 xl:p-5 select-text">
+            <div class="border-b border-[#334155] pb-3 mb-4">
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[#57F1DB] block font-bold">Booking Context</span>
+                <h3 class="text-sm xl:text-base font-bold text-[#DAE2FD] mt-1 truncate" title="{{ conversation.booking.service.title }}">
+                    {{ conversation.booking.service.title }}
+                </h3>
+            </div>
+
+            <div class="space-y-3 text-xs flex-1">
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Service Title</span>
+                    <span class="text-xs font-semibold text-[#DAE2FD] leading-tight block">{{ conversation.booking.service.title }}</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                        <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Booking Ref</span>
+                        <span class="text-xs font-bold font-mono text-[#57F1DB]">#{{ conversation.booking.id }}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                        <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Total Fee</span>
+                        <span class="text-xs font-bold font-mono text-[#DAE2FD]">₹{{ conversation.booking.total_amount }}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                        <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Scheduled Date</span>
+                        <span class="text-[11px] font-mono text-[#DAE2FD]">{{ conversation.booking.booking_date|date:"D, d M Y" }}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                        <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Time Slot</span>
+                        <span class="text-[11px] font-mono text-[#DAE2FD]">{{ conversation.booking.start_time|time:"H:i" }} – {{ conversation.booking.end_time|time:"H:i" }}</span>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1.5">Status</span>
+                    <div>
+                        {% include "components/status_badge.html" with status=conversation.booking.status %}
+                    </div>
+                </div>
+
+                {% if conversation.booking.customer_notes %}
+                    <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                        <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Customer Notes</span>
+                        <p class="text-xs text-[#BACAC5] leading-relaxed">{{ conversation.booking.customer_notes }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-[#334155]">
+                {% if is_customer %}
+                    <a
+                        href="{% url 'bookings:detail' conversation.booking.id %}"
+                        class="flex items-center justify-center gap-2 w-full text-center rounded-xl bg-[#57F1DB] text-[#0F172A] font-bold text-xs py-2.5 hover:bg-[#3CDDC7] transition shadow-sm"
+                    >
+                        <span>View Full Order Details</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                {% else %}
+                    <a
+                        href="{% url 'bookings:provider_detail' conversation.booking.id %}"
+                        class="flex items-center justify-center gap-2 w-full text-center rounded-xl bg-[#57F1DB] text-[#0F172A] font-bold text-xs py-2.5 hover:bg-[#3CDDC7] transition shadow-sm"
+                    >
+                        <span>Manage Booking & Job</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                {% endif %}
+            </div>
+        </aside>
+    </main>
+
+    <!-- ============================================================
+         MOBILE SLIDE-OVER DRAWER (Only on screens < lg)
+         ============================================================ -->
+    <div id="pv-booking-drawer-backdrop" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-xs transition-opacity lg:hidden" aria-hidden="true"></div>
+    <div
+        id="pv-booking-drawer"
+        class="pv-booking-drawer-closed fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-[#0F172A] border-l border-[#334155] p-5 transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col shadow-2xl lg:hidden"
+        aria-hidden="true"
+    >
+        <div class="flex items-center justify-between border-b border-[#334155] pb-3 mb-4">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[#57F1DB]">Booking Context</span>
+                <h3 class="text-sm font-bold text-[#DAE2FD] mt-0.5">
+                    {{ conversation.booking.service.title }}
+                </h3>
+            </div>
+            <button
+                type="button"
+                id="pv-close-drawer-btn"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-[#BACAC5] hover:text-[#DAE2FD] hover:bg-[#1E293B] transition-colors cursor-pointer bg-transparent border-none"
+                aria-label="Close details"
+            >
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-xs flex-1">
+            <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Service Title</span>
+                <span class="text-xs font-semibold text-[#DAE2FD] leading-tight block">{{ conversation.booking.service.title }}</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Booking Ref</span>
+                    <span class="text-xs font-bold font-mono text-[#57F1DB]">#{{ conversation.booking.id }}</span>
+                </div>
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Total Fee</span>
+                    <span class="text-xs font-bold font-mono text-[#DAE2FD]">₹{{ conversation.booking.total_amount }}</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Scheduled Date</span>
+                    <span class="text-[11px] font-mono text-[#DAE2FD]">{{ conversation.booking.booking_date|date:"D, d M Y" }}</span>
+                </div>
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Time Slot</span>
+                    <span class="text-[11px] font-mono text-[#DAE2FD]">{{ conversation.booking.start_time|time:"H:i" }} – {{ conversation.booking.end_time|time:"H:i" }}</span>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1.5">Status</span>
+                <div>
+                    {% include "components/status_badge.html" with status=conversation.booking.status %}
+                </div>
+            </div>
+
+            {% if conversation.booking.customer_notes %}
+                <div class="p-3 rounded-xl bg-[#1E293B] border border-[#334155]">
+                    <span class="text-[10px] font-mono uppercase text-[#BACAC5] block mb-1">Customer Notes</span>
+                    <p class="text-xs text-[#BACAC5] leading-relaxed">{{ conversation.booking.customer_notes }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-[#334155]">
+            {% if is_customer %}
+                <a
+                    href="{% url 'bookings:detail' conversation.booking.id %}"
+                    class="flex items-center justify-center gap-2 w-full text-center rounded-xl bg-[#57F1DB] text-[#0F172A] font-bold text-xs py-2.5 hover:bg-[#3CDDC7] transition shadow-sm"
+                >
+                    <span>View Full Details</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            {% else %}
+                <a
+                    href="{% url 'bookings:provider_detail' conversation.booking.id %}"
+                    class="flex items-center justify-center gap-2 w-full text-center rounded-xl bg-[#57F1DB] text-[#0F172A] font-bold text-xs py-2.5 hover:bg-[#3CDDC7] transition shadow-sm"
+                >
+                    <span>Manage Job</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ============================================================
+         BOTTOM NAVIGATION BAR (Mobile Only)
+         ============================================================ -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full z-30 flex justify-around items-center h-16 bg-[#0F172A] border-t border-[#334155]">
+        <a href="{% url 'chat:list' %}" class="flex flex-col items-center justify-center text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+            <span class="text-[10px] font-bold mt-0.5">Chat</span>
+        </a>
+        <a href="{% if is_customer or user.role == 'customer' %}{% url 'dashboard:customer' %}{% else %}{% url 'dashboard:provider' %}{% endif %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] mt-0.5">Dashboard</span>
+        </a>
+        <a href="{% url 'notifications:list' %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="text-[10px] mt-0.5">Alerts</span>
+            {% if unread_notification_count > 0 %}
+                <span class="absolute top-2 right-6 w-2 h-2 bg-[#57F1DB] rounded-full"></span>
+            {% endif %}
+        </a>
+        <a href="{% url 'accounts:profile' %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="text-[10px] mt-0.5">Settings</span>
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

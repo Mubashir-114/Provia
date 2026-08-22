@@ -1,0 +1,235 @@
+<header class="sticky top-0 z-50 border-b border-[#434843] bg-[#121412]/95 backdrop-blur-md">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5" aria-label="Global Navigation">
+    <!-- Brand Logo -->
+    <a href="{% url 'home' %}" class="flex items-center gap-3 text-decoration-none group">
+      <div class="flex h-9 w-9 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] transition group-hover:border-[#b4cdb8]">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="6" cy="18" r="2.5" stroke="#b4cdb8" stroke-width="2" />
+          <circle cx="18" cy="6" r="2.5" stroke="#dfc38f" stroke-width="2" fill="#dfc38f" />
+          <path d="M8.2 16.2L15.8 7.8" stroke="#b4cdb8" stroke-width="2" stroke-dasharray="1 3.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <span class="font-display text-xl font-bold tracking-tight text-[#e2e3df] group-hover:text-[#b4cdb8] transition">
+        Provia
+      </span>
+    </a>
+
+    <!-- Desktop Navigation Links -->
+    <div class="hidden md:flex items-center gap-7">
+      <a href="{% url 'home' %}#how-it-works" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+        How it works
+      </a>
+      <a href="{% url 'services:public_list' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+        Find Services
+      </a>
+
+      {% if user.is_authenticated %}
+        {% if user.role == 'customer' %}
+          <a href="{% url 'bookings:my_bookings' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            My Bookings
+          </a>
+          <a href="{% url 'dashboard:customer' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Dashboard
+          </a>
+          <a href="{% url 'chat:list' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Chat
+          </a>
+        {% elif user.role == 'provider' %}
+          <a href="{% url 'dashboard:provider' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Dashboard
+          </a>
+          <a href="{% url 'chat:list' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Chat
+          </a>
+          <a href="{% url 'services:list' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            My Services
+          </a>
+          <a href="{% url 'services:availability_list' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Availability
+          </a>
+          <a href="{% url 'bookings:provider_bookings' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#e2e3df] transition">
+            Bookings
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'accounts:register' %}" class="text-xs uppercase tracking-wider font-semibold text-[#c3c8c1] hover:text-[#dfc38f] transition">
+          For Pros
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Right Actions -->
+    <div class="hidden md:flex items-center gap-3">
+      {% if user.is_authenticated %}
+        <!-- Notification Dropdown Container -->
+        <div class="relative" id="pv-notif-dropdown-wrapper">
+          <button
+            type="button"
+            id="pv-notif-toggle-btn"
+            class="btn btn-outline py-2 px-3 gap-2 cursor-pointer inline-flex items-center"
+            aria-expanded="false"
+            aria-haspopup="true"
+            onclick="document.getElementById('pv-notif-dropdown-menu').classList.toggle('hidden')"
+          >
+            <svg class="h-4 w-4 text-[#c3c8c1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span class="text-xs font-mono">Alerts</span>
+            {% if unread_notification_count > 0 %}
+              <span class="badge bg-[#b4cdb8] text-[#0d0f0d]">
+                {{ unread_notification_count }}
+              </span>
+            {% endif %}
+          </button>
+
+          <!-- Dropdown Popover Menu (notification_dropdown_desktop) -->
+          <div
+            id="pv-notif-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-80 rounded border border-[#434843] bg-[#1a1c1a] shadow-xl z-50 overflow-hidden"
+          >
+            <div class="flex items-center justify-between border-b border-[#343733] bg-[#0d0f0d] px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-bold uppercase tracking-wider text-[#b4cdb8]">Notifications</span>
+                {% if unread_notification_count > 0 %}
+                  <span class="badge bg-[#b4cdb8] text-[#0d0f0d] text-[10px]">
+                    {{ unread_notification_count }} NEW
+                  </span>
+                {% endif %}
+              </div>
+              <a href="{% url 'notifications:list' %}" class="font-mono text-[11px] text-[#dfc38f] hover:underline">
+                View Center &rarr;
+              </a>
+            </div>
+
+            <div class="p-3 text-xs text-[#c3c8c1]">
+              {% if unread_notification_count > 0 %}
+                <p class="py-1 leading-relaxed">
+                  You have <span class="font-mono font-bold text-[#b4cdb8]">{{ unread_notification_count }} unread</span> message{{ unread_notification_count|pluralize }} or status update{{ unread_notification_count|pluralize }}.
+                </p>
+                <div class="mt-2.5 pt-2.5 border-t border-[#343733]">
+                  <a
+                    href="{% url 'notifications:list' %}"
+                    class="btn btn-primary w-full py-1.5 text-xs text-center"
+                  >
+                    Open Notification Center
+                  </a>
+                </div>
+              {% else %}
+                <div class="py-4 text-center">
+                  <span class="font-mono text-[11px] uppercase tracking-wider text-[#6f756f]">Status: All Clear</span>
+                  <p class="mt-1 text-[11px] text-[#c3c8c1]">No pending alerts or notifications.</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-[#343733]">
+                  <a
+                    href="{% url 'notifications:list' %}"
+                    class="btn btn-outline w-full py-1.5 text-xs text-center"
+                  >
+                    View Notification History
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline py-2 px-3 text-xs font-mono">
+          Profile
+        </a>
+        <form action="{% url 'accounts:logout' %}" method="post" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger py-2 px-3 text-xs font-mono cursor-pointer">
+            Logout
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost text-xs uppercase font-mono tracking-wider">
+          Login
+        </a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-brass text-xs uppercase font-mono tracking-wider">
+          Register
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Mobile Menu Toggle Button -->
+    <input type="checkbox" id="nav-toggle" class="peer sr-only" />
+    <label for="nav-toggle" class="grid h-9 w-9 cursor-pointer place-items-center rounded border border-[#434843] bg-[#0d0f0d] text-[#e2e3df] transition hover:bg-[#292a28] md:hidden" aria-label="Toggle Navigation Menu">
+      <svg id="menu-icon-open" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+      </svg>
+      <svg id="menu-icon-close" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </label>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="absolute top-full left-0 right-0 max-h-0 w-full overflow-hidden border-b border-[#434843] bg-[#0d0f0d] transition-[max-height] duration-300 ease-out md:hidden">
+      <div class="flex flex-col gap-1 px-4 py-4">
+        <a href="{% url 'home' %}#how-it-works" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+          How it works
+        </a>
+        <a href="{% url 'services:public_list' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+          Find Services
+        </a>
+
+        {% if user.is_authenticated %}
+          {% if user.role == 'customer' %}
+            <a href="{% url 'dashboard:customer' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Dashboard
+            </a>
+            <a href="{% url 'bookings:my_bookings' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              My Bookings
+            </a>
+            <a href="{% url 'chat:list' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Chat
+            </a>
+          {% elif user.role == 'provider' %}
+            <a href="{% url 'dashboard:provider' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Dashboard
+            </a>
+            <a href="{% url 'chat:list' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Chat
+            </a>
+            <a href="{% url 'services:list' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              My Services
+            </a>
+            <a href="{% url 'services:availability_list' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Availability
+            </a>
+            <a href="{% url 'bookings:provider_bookings' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+              Bookings
+            </a>
+          {% endif %}
+
+          <a href="{% url 'notifications:list' %}" class="flex items-center justify-between rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+            <span>Notifications</span>
+            {% if unread_notification_count > 0 %}
+              <span class="badge bg-[#b4cdb8] text-[#0d0f0d]">
+                {{ unread_notification_count }}
+              </span>
+            {% endif %}
+          </a>
+          <a href="{% url 'accounts:profile' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+            Profile
+          </a>
+          <form action="{% url 'accounts:logout' %}" method="post" class="mt-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger w-full text-xs font-mono uppercase">
+              Logout
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="rounded px-3 py-2 text-xs font-mono uppercase tracking-wider text-[#c3c8c1] hover:bg-[#1a1c1a] hover:text-[#e2e3df]">
+            Login
+          </a>
+          <a href="{% url 'accounts:register' %}" class="btn btn-brass mt-2 w-full text-xs font-mono uppercase">
+            Register
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>
+
+
+

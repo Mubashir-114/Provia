@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Booking #{{ booking.pk }} Details — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <div class="mb-6 flex flex-col gap-3">
+    {% include "components/back_button.html" with url_name="bookings:my_bookings" label="Back to My Bookings" %}
+  </div>
+
+  <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8 space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col gap-4 border-b border-[#343533] pb-6 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <span class="inline-flex items-center rounded-md bg-[#292a28] border border-[#343533] px-3 py-1 text-xs font-semibold text-[#b4cdb8]">
+          {{ booking.service.category.name }}
+        </span>
+
+        <h1 class="mt-3 font-display text-2xl sm:text-3xl font-bold text-[#e9ebe7]">
+          {{ booking.service.title }}
+        </h1>
+
+        <p class="mt-1.5 text-xs text-[#a4aba4]">
+          Booking Reference:
+          <span class="font-mono font-bold text-[#e9ebe7]">#{{ booking.pk }}</span>
+          <span class="text-[#6f756f] mx-1">•</span>
+          Created {{ booking.created_at|date:"d M Y, H:i" }}
+        </p>
+      </div>
+
+      <div class="flex flex-col items-start gap-2 sm:items-end">
+        {% include "components/status_badge.html" with status=booking.status %}
+        {% if payment %}
+          <div class="flex items-center gap-2 text-xs font-semibold text-[#a4aba4]">
+            <span class="text-[#6f756f]">Payment:</span>
+            {% include "components/status_badge.html" with status=payment.status %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Core Schedule & Pricing Grid -->
+    <div class="grid gap-6 sm:grid-cols-2">
+      <!-- Schedule Card -->
+      <div class="rounded-lg border border-[#343533] bg-[#121412] p-5">
+        <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">
+          Schedule &amp; Time
+        </p>
+        <p class="mt-2 text-base font-bold text-[#e9ebe7]">
+          {{ booking.booking_date|date:"l, d M Y" }}
+        </p>
+        <p class="mt-1 text-sm font-mono font-semibold text-[#b4cdb8]">
+          {{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}
+          <span class="text-xs font-normal text-[#a4aba4]">({{ booking.service.duration_minutes }} mins)</span>
+        </p>
+      </div>
+
+      <!-- Pricing Card -->
+      <div class="rounded-lg border border-[#343533] bg-[#121412] p-5">
+        <p class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">
+          Total Pricing
+        </p>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#e9ebe7]">
+          ₹{{ booking.total_amount }}
+        </p>
+        <p class="mt-1 text-xs text-[#6f756f]">Standard fixed service rate</p>
+      </div>
+    </div>
+
+    <!-- Service Provider Information -->
+    <div class="rounded-lg border border-[#343533] bg-[#121412] p-5">
+      <h2 class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">
+        Service Provider
+      </h2>
+      <p class="mt-2 text-lg font-bold text-[#dfc38f]">
+        {{ booking.provider.business_name|default:booking.provider.user.username }}
+      </p>
+
+      <div class="mt-4 grid gap-4 text-xs sm:grid-cols-3 border-t border-[#262825] pt-4">
+        {% if booking.provider.phone %}
+          <div>
+            <p class="text-[#6f756f]">Phone Contact</p>
+            <p class="mt-0.5 font-medium text-[#e9ebe7] font-mono">{{ booking.provider.phone }}</p>
+          </div>
+        {% endif %}
+        {% if booking.provider.email %}
+          <div>
+            <p class="text-[#6f756f]">Email Address</p>
+            <p class="mt-0.5 font-medium text-[#e9ebe7] truncate">{{ booking.provider.email }}</p>
+          </div>
+        {% endif %}
+        {% if booking.provider.city %}
+          <div>
+            <p class="text-[#6f756f]">Location / Region</p>
+            <p class="mt-0.5 font-medium text-[#e9ebe7]">
+              {{ booking.provider.city }}{% if booking.provider.state %}, {{ booking.provider.state }}{% endif %}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Location details if specified -->
+    {% if booking.service.location %}
+      <div class="rounded-lg border border-[#343533] bg-[#121412] p-5">
+        <h2 class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">
+          Service Location
+        </h2>
+        <p class="mt-2 text-sm font-medium text-[#e9ebe7]">
+          {% if booking.service.location.address %}{{ booking.service.location.address }}, {% endif %}
+          {{ booking.service.location.city }}, {{ booking.service.location.state }}
+          {% if booking.service.location.postal_code %} - <span class="font-mono text-xs text-[#a4aba4]">{{ booking.service.location.postal_code }}</span>{% endif %}
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- Notes Section -->
+    {% if booking.customer_notes or booking.provider_notes %}
+      <div class="space-y-4 border-t border-[#343533] pt-6">
+        {% if booking.customer_notes %}
+          <div>
+            <h2 class="text-xs font-mono uppercase tracking-wider text-[#6f756f]">
+              Your Instructions / Notes
+            </h2>
+            <div class="mt-2 whitespace-pre-line rounded-lg border border-[#343533] bg-[#121412] p-4 text-xs sm:text-sm text-[#e9ebe7] leading-relaxed">
+              {{ booking.customer_notes }}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if booking.provider_notes %}
+          <div>
+            <h2 class="text-xs font-mono uppercase tracking-wider text-[#dfc38f]">
+              Provider Response / Notes
+            </h2>
+            <div class="mt-2 whitespace-pre-line rounded-lg border border-[#dfc38f]/30 bg-[#dfc38f]/10 p-4 text-xs sm:text-sm text-[#dfc38f] leading-relaxed font-medium">
+              {{ booking.provider_notes }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Action Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 border-t border-[#343533] pt-6">
+      <div>
+        {% include "components/back_button.html" with url_name="bookings:my_bookings" label="Back to My Bookings" %}
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        {% if booking.status == "completed" %}
+          {% if booking.review %}
+            <a
+              href="{% url 'reviews:detail' booking.pk %}"
+              class="btn btn-outline"
+            >
+              View Review
+            </a>
+          {% else %}
+            <a
+              href="{% url 'reviews:create' booking.pk %}"
+              class="btn btn-primary"
+            >
+              Leave Review
+            </a>
+          {% endif %}
+        {% endif %}
+
+        {% if booking.status == "pending" and not payment %}
+          <a
+            href="{% url 'payments:checkout' booking.pk %}"
+            class="btn btn-brass"
+          >
+            Pay Now (₹{{ booking.total_amount }})
+          </a>
+        {% elif payment and payment.status == "success" %}
+          <a
+            href="{% url 'payments:detail' payment.pk %}"
+            class="btn btn-outline"
+          >
+            View Payment Details
+          </a>
+        {% elif payment and payment.status == "initiated" %}
+          <a
+            href="{% url 'payments:checkout' booking.pk %}"
+            class="btn btn-brass"
+          >
+            Continue Payment
+          </a>
+        {% endif %}
+
+        {% if booking.status == "pending" or booking.status == "confirmed" %}
+          <button
+            type="button"
+            onclick="document.getElementById('cancel-booking-dialog').showModal()"
+            class="btn btn-danger cursor-pointer"
+          >
+            Cancel Booking
+          </button>
+          {% url 'bookings:cancel' booking.pk as cancel_booking_url %}
+          {% include "components/confirm_dialog.html" with dialog_id="cancel-booking-dialog" title="Cancel Booking" message="Are you sure you want to cancel this service booking appointment?" confirm_url=cancel_booking_url confirm_label="Cancel Booking" %}
+        {% endif %}
+
+        {% if booking.status != "cancelled" %}
+          <form action="{% url 'bookings:chat' booking.pk %}" method="post">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-outline cursor-pointer"
+            >
+              Chat with Provider
+            </button>
+          </form>
+        {% endif %}
+
+        <a
+          href="{% url 'services:public_list' %}"
+          class="btn btn-outline"
+        >
+          Explore Services
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

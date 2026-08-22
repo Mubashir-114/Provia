@@ -1,0 +1,39 @@
+<div class="mb-8 border-b border-[#434843] pb-6">
+  {% if breadcrumbs %}
+    <div class="mb-4">
+      {% include "components/breadcrumbs.html" with items=breadcrumbs %}
+    </div>
+  {% endif %}
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      {% if back_url_name %}
+        <div class="mb-2">
+          {% include "components/back_button.html" with url_name=back_url_name url_args=back_url_args label=back_label %}
+        </div>
+      {% endif %}
+      <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#e2e3df]">
+        {{ title }}
+      </h1>
+      {% if subtitle %}
+        <p class="mt-1.5 text-sm text-[#c3c8c1] leading-relaxed max-w-2xl">
+          {{ subtitle }}
+        </p>
+      {% endif %}
+    </div>
+
+    {% if action_url_name or action_url %}
+      <div class="shrink-0">
+        <a
+          href="{% if action_url %}{{ action_url }}{% elif action_url_args %}{% url action_url_name action_url_args %}{% else %}{% url action_url_name %}{% endif %}"
+          class="btn btn-primary"
+        >
+          {% if action_icon %}
+            {{ action_icon|safe }}
+          {% endif %}
+          <span>{{ action_label|default:"Action" }}</span>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

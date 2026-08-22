@@ -1,0 +1,31 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Provia booking request received{% endblock %}
+
+{% block eyebrow %}
+<p style="margin:14px 0 0 0; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#aeb3aa;">
+    Booking Request
+</p>
+{% endblock %}
+
+{% block heading %}Booking request received{% endblock %}
+
+{% block lead %}
+<p style="margin:0 0 18px 0; font-size:15px; line-height:1.7; color:#aeb3aa;">
+    Hi {{ customer_name }}, we've received your booking request for
+    <strong style="color:#e7e8e3;">{{ service_title }}</strong> with
+    {{ provider_name }}. We'll email you as soon as the provider confirms it.
+</p>
+{% endblock %}
+
+{% block content %}
+{% include "email/partials/booking_info.html" %}
+
+{% include "email/partials/cta_button.html" with url=booking_link label="View Booking" %}
+{% endblock %}
+
+{% block footer_note %}
+<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83;">
+    Need to make changes? Open your Provia account to review the booking details.
+</p>
+{% endblock %}

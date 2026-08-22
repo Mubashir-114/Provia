@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Provider Business Identity &amp; Profile — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <div class="mb-6 flex items-center gap-2 border-b border-[#343733] pb-3">
+    <a href="{% url 'accounts:profile' %}" class="rounded px-3 py-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df] transition">
+      &larr; Personal Account
+    </a>
+    <a href="{% url 'providers:profile' %}" class="rounded px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider bg-[#292a28] text-[#dfc38f] border border-[#434843]">
+      Business Profile
+    </a>
+  </div>
+
+  {% include "components/page_header.html" with title="Provider Business Identity" subtitle="Manage your commercial trade profile, public business credentials, dispatch address, and service overview." back_url_name="dashboard:provider" back_label="Back to Dashboard" %}
+
+  <!-- Business Operational Banner (provider_business_identity) -->
+  <div class="mb-8 rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-7">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#434843] pb-6 mb-6">
+      <div class="flex items-center gap-4">
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-xl font-bold font-mono text-[#dfc38f]">
+          {{ profile.business_name|first|default:request.user.username|first|upper }}
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="font-display text-xl sm:text-2xl font-bold text-[#e2e3df]">
+              {{ profile.business_name|default:request.user.username }}
+            </h2>
+            <span class="rounded px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-[#dfc38f]/10 text-[#dfc38f] border border-[#dfc38f]/30">
+              COMMERCIAL PRO
+            </span>
+          </div>
+          <p class="font-mono text-xs text-[#c3c8c1] mt-1">
+            {% if profile.city %}{{ profile.city }}{% if profile.state %}, {{ profile.state }}{% endif %}{% else %}Location not configured{% endif %}
+            {% if profile.phone %} &bull; {{ profile.phone }}{% endif %}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rounded px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider bg-[#292a28] text-[#b4cdb8] border border-[#434843]">
+          ACTIVE PROVIDER
+        </span>
+        <a
+          href="{% url 'services:list' %}"
+          class="btn btn-outline py-1.5 px-3 text-xs font-mono text-[#b4cdb8] hover:border-[#b4cdb8]"
+        >
+          View Services Catalog &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Commercial Metadata Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Provider ID</p>
+        <p class="mt-1 font-bold text-[#e2e3df]">#{{ profile.pk|default:request.user.pk }}</p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Business Phone</p>
+        <p class="mt-1 font-bold text-[#e2e3df] truncate">{{ profile.phone|default:"Not set" }}</p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Commercial Email</p>
+        <p class="mt-1 font-bold text-[#b4cdb8] truncate">{{ profile.email|default:request.user.email }}</p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Operating Postal</p>
+        <p class="mt-1 font-bold text-[#dfc38f]">{{ profile.postal_code|default:"—" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business Profile Edit Form -->
+  <div class="rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-8">
+    <div class="border-b border-[#434843] pb-4 mb-6">
+      <h3 class="font-display text-lg font-bold text-[#e2e3df]">
+        Business Information &amp; Service Profile
+      </h3>
+      <p class="text-xs text-[#c3c8c1] mt-0.5">
+        Configure your commercial name, customer-facing bio, direct telephone, and regional address.
+      </p>
+    </div>
+
+    <form method="post" class="space-y-6 auth-form provia-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="rounded border border-red-500/30 bg-red-500/10 p-4 text-xs font-mono text-red-400">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        {% for field in form %}
+          <div class="{% if field.name == 'business_description' or field.name == 'address' %}sm:col-span-2{% endif %}">
+            <label for="{{ field.id_for_label }}" class="label">
+              {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="mt-1 text-[11px] font-mono text-[#6f756f]">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <p class="mt-1 text-xs font-mono text-red-400">{{ field.errors.0 }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-[#434843]">
+        <div class="text-xs font-mono text-[#6f756f]">
+          Updates are displayed on public service listings and booking invoices.
+        </div>
+        <div class="flex items-center gap-3">
+          {% include "components/back_button.html" with url_name="dashboard:provider" label="Cancel" %}
+          <button
+            type="submit"
+            class="btn btn-brass px-6 py-2.5 text-xs font-mono font-bold uppercase tracking-wider cursor-pointer"
+          >
+            Save Business Profile
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

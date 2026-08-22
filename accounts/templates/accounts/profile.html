@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Account Settings &amp; Profile — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  {% if request.user.role == 'provider' %}
+    <div class="mb-6 flex items-center gap-2 border-b border-[#343733] pb-3">
+      <a href="{% url 'accounts:profile' %}" class="rounded px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider bg-[#292a28] text-[#dfc38f] border border-[#434843]">
+        Personal Account
+      </a>
+      <a href="{% url 'providers:profile' %}" class="rounded px-3 py-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df] transition">
+        Business Profile &rarr;
+      </a>
+    </div>
+    {% include "components/page_header.html" with title="Personal Account Settings" subtitle="Manage your personal identity credentials, authentication status, and contact information." back_url_name="dashboard:provider" back_label="Back to Dashboard" %}
+  {% else %}
+    {% include "components/page_header.html" with title="Account Settings &amp; Profile" subtitle="Manage your personal customer profile, verified contact channels, and system security." back_url_name="dashboard:customer" back_label="Back to Dashboard" %}
+  {% endif %}
+
+  <!-- Identity Summary & System Badges (customer_activity_profile) -->
+  <div class="mb-8 rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-7">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#434843] pb-6 mb-6">
+      <div class="flex items-center gap-4">
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-xl font-bold font-mono text-[#b4cdb8]">
+          {{ request.user.first_name|first|default:request.user.username|first|upper }}
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="font-display text-xl sm:text-2xl font-bold text-[#e2e3df]">
+              {{ request.user.get_full_name|default:request.user.username }}
+            </h2>
+            <span class="font-mono text-xs text-[#6f756f]">@{{ request.user.username }}</span>
+          </div>
+          <p class="font-mono text-xs text-[#c3c8c1] mt-0.5">
+            {{ request.user.email }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rounded px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider bg-[#292a28] text-[#b4cdb8] border border-[#434843]">
+          {{ request.user.get_role_display }}
+        </span>
+        {% if request.user.is_verified %}
+          <span class="rounded px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider bg-[#b4cdb8]/10 text-[#b4cdb8] border border-[#b4cdb8]/30">
+            &check; Verified
+          </span>
+        {% else %}
+          <span class="rounded px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider bg-[#dfc38f]/10 text-[#dfc38f] border border-[#dfc38f]/30">
+            Verification Pending
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">User ID</p>
+        <p class="mt-1 font-bold text-[#e2e3df]">#{{ request.user.pk }}</p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Role Access</p>
+        <p class="mt-1 font-bold text-[#b4cdb8]">{{ request.user.role|upper }}</p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Email Status</p>
+        <p class="mt-1 font-bold {% if request.user.is_verified %}text-[#b4cdb8]{% else %}text-[#dfc38f]{% endif %}">
+          {% if request.user.is_verified %}CONFIRMED{% else %}UNVERIFIED{% endif %}
+        </p>
+      </div>
+      <div class="rounded border border-[#343733] bg-[#0d0f0d] p-3">
+        <p class="text-[10px] uppercase text-[#6f756f]">Member Since</p>
+        <p class="mt-1 font-bold text-[#e2e3df]">{{ request.user.date_joined|date:"M Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Edit Form Section (account_settings / account_settings_desktop) -->
+  <div class="rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-8">
+    <div class="border-b border-[#434843] pb-4 mb-6">
+      <h3 class="font-display text-lg font-bold text-[#e2e3df]">
+        Profile Information &amp; Contact Details
+      </h3>
+      <p class="text-xs text-[#c3c8c1] mt-0.5">
+        Update your account profile credentials. These details are used to confirm service bookings.
+      </p>
+    </div>
+
+    <form method="post" class="space-y-6 auth-form provia-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="rounded border border-red-500/30 bg-red-500/10 p-4 text-xs font-mono text-red-400">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        {% for field in form %}
+          <div class="{% if field.name == 'bio' or field.name == 'address' %}sm:col-span-2{% endif %}">
+            <label for="{{ field.id_for_label }}" class="label">
+              {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <p class="mt-1 text-[11px] font-mono text-[#6f756f]">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+              <p class="mt-1 text-xs font-mono text-red-400">{{ field.errors.0 }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-[#434843]">
+        <div class="text-xs font-mono text-[#6f756f]">
+          Changes will reflect immediately across your appointments.
+        </div>
+        <div class="flex items-center gap-3">
+          {% if request.user.role == 'provider' %}
+            <a href="{% url 'dashboard:provider' %}" class="btn btn-ghost text-xs font-mono">Cancel</a>
+          {% else %}
+            <a href="{% url 'dashboard:customer' %}" class="btn btn-ghost text-xs font-mono">Cancel</a>
+          {% endif %}
+          <button
+            type="submit"
+            class="btn btn-primary px-6 py-2.5 text-xs font-mono font-bold uppercase tracking-wider cursor-pointer"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

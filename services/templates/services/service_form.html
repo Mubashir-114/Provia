@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title|default:"Service Form" }} — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
+  <div class="mb-6">
+    {% include "components/back_button.html" with url_name="services:list" label="Back to My Services" %}
+  </div>
+
+  {% include "components/page_header.html" with title=page_title|default:"Manage Service" subtitle="Provide clear details and pricing for this service." %}
+
+  <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8">
+    <form method="post" class="provia-form space-y-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm font-medium text-red-400">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-xs font-semibold uppercase tracking-wider text-[#a4aba4] mb-2">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-[#dfc38f]">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+            <p class="mt-1.5 text-xs text-[#6f756f]">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="mt-1.5 text-xs text-red-400 font-medium">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-[#343533]">
+        <a href="{% url 'services:list' %}" class="btn btn-outline">
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          {{ submit_label|default:"Save Service" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

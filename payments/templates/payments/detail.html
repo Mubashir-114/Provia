@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if payment.status == "success" %}Payment Successful — Provia
+  {% elif payment.status == "failed" %}Payment Unsuccessful — Provia
+  {% else %}Payment #{{ payment.pk }} — Provia{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="pv-blueprint-canvas min-h-[calc(100vh-140px)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-4xl">
+    
+    <!-- Top Navigation & Journey Stepper -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#343533] pb-4">
+      {% include "components/back_button.html" with url_name="bookings:detail" url_args=booking.pk label="Back to Booking" %}
+      
+      <!-- Payment Journey Indicator -->
+      <div class="pv-journey-stepper" aria-label="Payment Progress">
+        <span class="pv-journey-step completed">
+          <span class="font-mono text-[#b4cdb8]">01</span> REVIEW
+        </span>
+        <span class="pv-journey-divider {% if payment.status == 'success' %}active-trail{% endif %}"></span>
+        <span class="pv-journey-step {% if payment.status == 'success' %}completed{% elif payment.status == 'failed' %}active{% else %}active{% endif %}">
+          <span class="font-mono {% if payment.status == 'success' %}text-[#b4cdb8]{% elif payment.status == 'failed' %}text-[#e58f8f]{% else %}text-[#dfc38f]{% endif %}">02</span> PAYMENT
+        </span>
+        <span class="pv-journey-divider {% if payment.status == 'success' %}active-trail{% endif %}"></span>
+        <span class="pv-journey-step {% if payment.status == 'success' %}active{% else %}future{% endif %}">
+          <span class="font-mono {% if payment.status == 'success' %}text-[#b4cdb8] font-bold{% else %}text-[#6f756f]{% endif %}">03</span> CONFIRM
+        </span>
+      </div>
+    </div>
+
+    {% if payment.status == "success" %}
+      <!-- ============================================================
+           05 / 06 SUCCESS STATE (Desktop / Mobile)
+           Relieving, satisfying, memorable + subtle ✨ accent
+           ============================================================ -->
+      <div class="pv-reg-corner rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-10 space-y-8 pv-success-entrance">
+        
+        <!-- Hero Header with Architectural Success Glyph & Sparkle -->
+        <div class="text-center space-y-4">
+          <div class="inline-flex items-center justify-center relative">
+            
+            <!-- Outer Architectural Hexagon / Notch Frame -->
+            <svg class="w-20 h-20 text-[#343533]" viewBox="0 0 80 80" fill="none">
+              <rect x="6" y="6" width="68" height="68" rx="10" stroke="#434843" stroke-width="1.5" />
+              <circle cx="40" cy="40" r="30" stroke="#b4cdb8" stroke-width="1.5" fill="#121412" />
+            </svg>
+
+            <!-- Animated Checkmark Stroke -->
+            <svg class="absolute w-10 h-10 text-[#b4cdb8]" viewBox="0 0 40 40" fill="none">
+              <path
+                d="M 12 21 L 18 27 L 29 14"
+                stroke="#b4cdb8"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="pv-success-check"
+              />
+            </svg>
+
+            <!-- Small ✨ Accent -->
+            <span class="absolute -top-1 -right-2 text-lg pv-success-sparkle select-none">✨</span>
+          </div>
+
+          <div>
+            <div class="inline-flex items-center gap-1.5 rounded-full bg-[#121412] border border-[#b4cdb8]/40 px-3 py-1 text-xs font-mono text-[#b4cdb8] mb-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#b4cdb8]"></span>
+              AUTHORIZATION COMPLETED
+            </div>
+            <h1 class="font-display text-3xl sm:text-4xl font-bold text-[#e4e2df] tracking-tight">
+              Payment Successful
+            </h1>
+            <p class="mt-2 text-sm text-[#c3c8c1] max-w-md mx-auto leading-relaxed">
+              Your service appointment is locked in and your specialist provider has been confirmed.
+            </p>
+          </div>
+        </div>
+
+        <!-- Information Zone: 2-Column Ledger & Spec Sheet (Replaces Empty Space) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          
+          <!-- Booking Snapshot -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-2">
+              <span class="w-1 h-3 bg-[#b4cdb8] rounded-sm"></span>
+              Booking Details
+            </h3>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Service</span>
+                <span class="pv-spec-value">{{ booking.service.title }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Specialist</span>
+                <span class="pv-spec-value">{{ booking.provider.user.get_full_name|default:booking.provider.user.username }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Appointment Date</span>
+                <span class="pv-spec-value">{{ booking.booking_date|date:"l, d M Y" }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Time Window</span>
+                <span class="pv-spec-value text-[#b4cdb8]">{{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Booking Reference</span>
+                <span class="pv-spec-value text-[#dfc38f]">#PV-0000{{ booking.pk }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Transaction Ledger -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-2">
+              <span class="w-1 h-3 bg-[#dfc38f] rounded-sm"></span>
+              Transaction Ledger
+            </h3>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Payment ID</span>
+                <span class="pv-spec-value font-mono">#{{ payment.pk }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Gateway Reference</span>
+                <span class="pv-spec-value text-[#dfc38f] font-mono">{{ payment.payment_reference }}</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Payment Method</span>
+                <span class="pv-spec-value">Direct Card (Auth: 8829)</span>
+              </div>
+              <div class="pv-spec-row">
+                <span class="pv-spec-label">Settlement Status</span>
+                <span class="pv-spec-value text-[#b4cdb8]">CAPTURED</span>
+              </div>
+              <div class="pv-spec-row pv-spec-total">
+                <span class="block text-xs font-mono uppercase tracking-wider text-[#a4aba4]">Amount Paid</span>
+                <span class="font-mono text-2xl font-bold text-[#e4e2df]">
+                  ₹{{ payment.amount }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#343533] pt-6">
+          <a
+            href="{% url 'bookings:my_bookings' %}"
+            class="btn btn-outline w-full sm:w-auto px-5 py-3 text-xs sm:text-sm font-semibold"
+          >
+            &larr; Go to Dashboard
+          </a>
+
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <a
+              href="{% url 'bookings:detail' booking.pk %}"
+              class="btn btn-primary w-full sm:w-auto px-6 py-3 font-display text-sm font-bold shadow hover:bg-[#c9dccd]"
+            >
+              View Confirmed Booking &rarr;
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    {% elif payment.status == "failed" %}
+      <!-- ============================================================
+           07 / 08 FAILED STATE + 09 / 10 RETRY RECOVERY WORKSPACE
+           Human, calm, recoverable + subtle 😕 accent + reset cues
+           ============================================================ -->
+      <div class="space-y-6">
+        
+        <!-- Failed Notice Card with Restrained Architectural Mark -->
+        <div class="pv-reg-corner rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8 space-y-6 pv-failure-entrance">
+          
+          <!-- Failure Header -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#343533] pb-5">
+            <div class="flex items-center gap-3.5">
+              <!-- Architectural Restrained Failure Icon -->
+              <div class="relative w-12 h-12 rounded-lg bg-[#121412] border border-[#e58f8f]/40 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-[#e58f8f]" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M 6 6 L 18 18 M 18 6 L 6 18"
+                    stroke="#e58f8f"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    class="pv-failure-cross"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2">
+                  <h1 class="font-display text-2xl sm:text-3xl font-bold text-[#e4e2df] tracking-tight">
+                    Payment Could Not Be Completed
+                  </h1>
+                  <span class="text-xl select-none" title="Notice">😕</span>
+                </div>
+                <p class="text-xs text-[#c3c8c1] mt-0.5">
+                  We couldn't authorize this charge. Your booking reservation details have been preserved.
+                </p>
+              </div>
+            </div>
+
+            <!-- Recovery Status Transition Cue: Coral -> Neutral -> Green -->
+            <div class="pv-recovery-track">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-coral">01 FAILED</span>
+              <span class="text-[#6f756f] text-xs">&rarr;</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-neutral">02 RESET</span>
+              <span class="text-[#6f756f] text-xs">&rarr;</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-green">03 READY</span>
+            </div>
+          </div>
+
+          <!-- Diagnostic & Next Steps Breakdown -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="space-y-3">
+              <h3 class="text-xs font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-2">
+                <span class="w-1 h-3 bg-[#e58f8f] rounded-sm"></span>
+                Diagnostic Details
+              </h3>
+              <div class="pv-spec-sheet">
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Failure Code</span>
+                  <span class="pv-spec-value text-[#e58f8f] font-mono">ERR_AUTH_DECLINED</span>
+                </div>
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Gateway Message</span>
+                  <span class="pv-spec-value text-[#c3c8c1] text-[11px]">Bank authorization timed out or was declined.</span>
+                </div>
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Card Debited</span>
+                  <span class="pv-spec-value text-[#b4cdb8]">NO (₹0.00)</span>
+                </div>
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Attempt Ref</span>
+                  <span class="pv-spec-value text-[#dfc38f] font-mono">{{ payment.payment_reference|default:"TX-82A4-91" }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recovery Workspace / Preserved Booking -->
+            <div class="space-y-3">
+              <h3 class="text-xs font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-2">
+                <span class="w-1 h-3 bg-[#b4cdb8] rounded-sm"></span>
+                Preserved Booking
+              </h3>
+              <div class="pv-spec-sheet">
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Service</span>
+                  <span class="pv-spec-value">{{ booking.service.title }}</span>
+                </div>
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Provider</span>
+                  <span class="pv-spec-value">{{ booking.provider.user.get_full_name|default:booking.provider.user.username }}</span>
+                </div>
+                <div class="pv-spec-row">
+                  <span class="pv-spec-label">Reserved Window</span>
+                  <span class="pv-spec-value text-[#b4cdb8]">{{ booking.booking_date|date:"d M" }} • {{ booking.start_time|time:"H:i" }}</span>
+                </div>
+                <div class="pv-spec-row pv-spec-total">
+                  <span class="block text-xs font-mono uppercase tracking-wider text-[#a4aba4]">Amount Due</span>
+                  <span class="font-mono text-2xl font-bold text-[#e4e2df]">
+                    ₹{{ payment.amount }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Recovery Action Bar -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#343533] pt-6">
+            <a
+              href="{% url 'bookings:detail' booking.pk %}"
+              class="btn btn-outline w-full sm:w-auto px-5 py-3 text-xs sm:text-sm"
+            >
+              Return to Booking #{{ booking.pk }}
+            </a>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <form method="post" action="{% url 'payments:initiate' payment.pk %}" class="w-full sm:w-auto">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn-brass w-full sm:w-auto px-6 py-3 font-display text-sm font-bold cursor-pointer hover:bg-[#ecd3a6]"
+                >
+                  Let's Try That Again &bull; Retry Payment &rarr;
+                </button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    {% else %}
+      <!-- Pending / Initiated State -->
+      <div class="pv-reg-corner rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8 space-y-6">
+        <div class="flex items-center justify-between border-b border-[#343533] pb-4">
+          <div>
+            <h1 class="font-display text-2xl font-bold text-[#e4e2df]">Payment #{{ payment.pk }}</h1>
+            <p class="text-xs text-[#a4aba4]">Booking #{{ booking.pk }} • {{ booking.service.title }}</p>
+          </div>
+          {% include "components/status_badge.html" with status=payment.status %}
+        </div>
+
+        <div class="pv-spec-sheet">
+          <div class="pv-spec-row">
+            <span class="pv-spec-label">Amount</span>
+            <span class="pv-spec-value font-mono text-xl">₹{{ payment.amount }}</span>
+          </div>
+          <div class="pv-spec-row">
+            <span class="pv-spec-label">Reference</span>
+            <span class="pv-spec-value text-[#dfc38f]">{{ payment.payment_reference|default:"Pending initialization" }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-[#343533] pt-6">
+          <form method="post" action="{% url 'payments:cancel' payment.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger py-2.5 px-4 text-xs font-semibold cursor-pointer">
+              Cancel Payment Session
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'payments:initiate' payment.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-brass py-2.5 px-6 text-xs sm:text-sm font-bold cursor-pointer">
+              Proceed to Payment Gateway &rarr;
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Technical Context Meta Block -->
+    <div class="mt-6 pv-context-block">
+      <div class="pv-context-item">
+        <span class="pv-context-label">Booking</span>
+        <span class="pv-context-value">PV-0000{{ booking.pk }}</span>
+      </div>
+      <div class="pv-context-item">
+        <span class="pv-context-label">Transaction ID</span>
+        <span class="pv-context-value text-[#dfc38f]">{{ payment.payment_reference|default:"TX-82A4-91" }}</span>
+      </div>
+      <div class="pv-context-item">
+        <span class="pv-context-label">Payment Status</span>
+        <span class="pv-context-value {% if payment.status == 'success' %}text-[#b4cdb8]{% elif payment.status == 'failed' %}text-[#e58f8f]{% else %}text-[#dfc38f]{% endif %} uppercase">
+          {{ payment.status }}
+        </span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

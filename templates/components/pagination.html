@@ -1,0 +1,36 @@
+{% if page_obj and page_obj.has_other_pages %}
+<nav class="mt-8 flex items-center justify-between border-t border-[#434843] pt-6" aria-label="Pagination Navigation">
+  <div class="hidden sm:block">
+    <p class="text-xs font-mono text-[#c3c8c1]">
+      PAGE <span class="font-bold text-[#e2e3df]">{{ page_obj.number }}</span> OF <span class="font-bold text-[#e2e3df]">{{ page_obj.paginator.num_pages }}</span>
+    </p>
+  </div>
+  <div class="flex flex-1 justify-between sm:justify-end gap-2">
+    {% if page_obj.has_previous %}
+      <a
+        href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+        class="inline-flex items-center gap-1.5 rounded border border-[#434843] bg-[#1a1c1a] hover:bg-[#292a28] px-3.5 py-1.5 text-xs font-mono font-medium text-[#e2e3df] transition hover:border-[#b4cdb8]"
+      >
+        &larr; PREV
+      </a>
+    {% else %}
+      <span class="inline-flex items-center gap-1.5 rounded border border-[#343733] bg-[#0d0f0d] px-3.5 py-1.5 text-xs font-mono font-medium text-[#6f756f] cursor-not-allowed">
+        &larr; PREV
+      </span>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+      <a
+        href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+        class="inline-flex items-center gap-1.5 rounded border border-[#434843] bg-[#1a1c1a] hover:bg-[#292a28] px-3.5 py-1.5 text-xs font-mono font-medium text-[#e2e3df] transition hover:border-[#b4cdb8]"
+      >
+        NEXT &rarr;
+      </a>
+    {% else %}
+      <span class="inline-flex items-center gap-1.5 rounded border border-[#343733] bg-[#0d0f0d] px-3.5 py-1.5 text-xs font-mono font-medium text-[#6f756f] cursor-not-allowed">
+        NEXT &rarr;
+      </span>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Processing Payment — Provia{% endblock %}
+
+{% block content %}
+<div class="pv-blueprint-canvas min-h-[calc(100vh-140px)] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-3xl">
+    
+    <!-- Top Metadata & Header -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#343533] pb-4">
+      {% include "components/back_button.html" with url_name="payments:checkout" url_args=booking.pk label="Return to Checkout" %}
+      
+      <!-- Payment Journey Indicator -->
+      <div class="pv-journey-stepper" aria-label="Payment Progress">
+        <span class="pv-journey-step completed">
+          <span class="font-mono text-[#b4cdb8]">01</span> REVIEW
+        </span>
+        <span class="pv-journey-divider active-trail"></span>
+        <span class="pv-journey-step active">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#dfc38f] animate-pulse mr-1"></span>
+          <span class="font-mono text-[#dfc38f]">02</span> PROCESSING
+        </span>
+        <span class="pv-journey-divider"></span>
+        <span class="pv-journey-step future">
+          <span class="font-mono text-[#6f756f]">03</span> CONFIRM
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Processing Card -->
+    <div class="pv-reg-corner rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-10 space-y-8 text-center">
+      
+      <!-- Top Transaction Pill -->
+      <div class="inline-flex items-center gap-2 rounded-md bg-[#121412] border border-[#343533] px-3.5 py-1.5 text-xs font-mono text-[#dfc38f]">
+        <span class="w-2 h-2 rounded-full bg-[#dfc38f] animate-ping"></span>
+        <span>AUTH_SESSION: {{ payment.payment_reference|default:"TX-82A4-91" }}</span>
+      </div>
+
+      <!-- Custom Architectural Processing Mark (Not a generic spinner) -->
+      <div class="relative flex items-center justify-center my-4">
+        <div class="relative w-36 h-36 flex items-center justify-center">
+          
+          <!-- Outer Architectural Framing Frame -->
+          <svg class="absolute inset-0 w-full h-full text-[#343533]" viewBox="0 0 120 120" fill="none">
+            <!-- Corner Ticks -->
+            <path d="M 6 18 L 6 6 L 18 6" stroke="#434843" stroke-width="1.5" />
+            <path d="M 102 6 L 114 6 L 114 18" stroke="#434843" stroke-width="1.5" />
+            <path d="M 114 102 L 114 114 L 102 114" stroke="#434843" stroke-width="1.5" />
+            <path d="M 18 114 L 6 114 L 6 102" stroke="#434843" stroke-width="1.5" />
+            
+            <!-- Precision Concentric Ruler -->
+            <circle cx="60" cy="60" r="48" stroke="#262825" stroke-width="1" stroke-dasharray="2 4" />
+          </svg>
+
+          <!-- Animated Dynamic Architectural Geometry -->
+          <svg class="w-28 h-28 text-[#b4cdb8] pv-proc-pulse" viewBox="0 0 100 100" fill="none">
+            <!-- Outer Rectangular Track Drawing -->
+            <rect
+              x="14"
+              y="14"
+              width="72"
+              height="72"
+              rx="4"
+              stroke="#b4cdb8"
+              stroke-width="1.5"
+              class="pv-proc-frame"
+            />
+
+            <!-- Moving Scanline Laser -->
+            <g class="pv-proc-scanline">
+              <line x1="18" y1="50" x2="82" y2="50" stroke="#dfc38f" stroke-width="1.5" opacity="0.8" />
+              <line x1="26" y1="50" x2="74" y2="50" stroke="#d0e9d3" stroke-width="2.5" />
+            </g>
+
+            <!-- Central Verification Glyph -->
+            <path
+              d="M 38 52 L 47 61 L 65 41"
+              stroke="#dfc38f"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="pv-proc-glyph"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- State Headlines -->
+      <div class="space-y-2">
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-[#e4e2df] tracking-tight">
+          Processing Payment
+        </h1>
+        <p class="mx-auto max-w-md text-xs sm:text-sm text-[#c3c8c1] leading-relaxed">
+          Please do not refresh or close this window while we verify authorization with your issuing institution.
+        </p>
+      </div>
+
+      <!-- Compact Booking Context Spec Block (Prevents Dead Space) -->
+      <div class="pv-spec-sheet max-w-lg mx-auto text-left">
+        <div class="pv-spec-row">
+          <span class="pv-spec-label">Service Allocation</span>
+          <span class="pv-spec-value">{{ booking.service.title }}</span>
+        </div>
+        <div class="pv-spec-row">
+          <span class="pv-spec-label">Specialist Provider</span>
+          <span class="pv-spec-value">{{ booking.provider.user.get_full_name|default:booking.provider.user.username }}</span>
+        </div>
+        <div class="pv-spec-row">
+          <span class="pv-spec-label">Transaction Authorization ID</span>
+          <span class="pv-spec-value text-[#dfc38f]">{{ payment.payment_reference|default:"TX-82A4-91" }}</span>
+        </div>
+        <div class="pv-spec-row pv-spec-total">
+          <span class="block text-xs font-mono uppercase tracking-wider text-[#a4aba4]">Authorization Amount</span>
+          <span class="font-mono text-2xl font-bold text-[#e4e2df]">
+            ₹{{ payment.amount }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Dev Sandbox Simulation Actions -->
+      <div class="border-t border-[#343533] pt-6">
+        <p class="text-[11px] font-mono text-[#a4aba4] mb-4 uppercase tracking-wider">
+          Sandbox Gateway Router Action
+        </p>
+        <div class="grid gap-3 sm:grid-cols-2 max-w-lg mx-auto">
+          <form method="post" action="{% url 'payments:mock_success' payment.pk %}">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-primary w-full py-3 text-xs sm:text-sm font-bold cursor-pointer hover:bg-[#c9dccd]"
+            >
+              Simulate Successful Authorization &rarr;
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'payments:mock_failure' payment.pk %}">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-danger w-full py-3 text-xs sm:text-sm font-bold cursor-pointer"
+            >
+              Simulate Declined Authorization &rarr;
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Technical Context Meta Bar -->
+    <div class="mt-6 pv-context-block">
+      <div class="pv-context-item">
+        <span class="pv-context-label">Booking</span>
+        <span class="pv-context-value">PV-0000{{ booking.pk }}</span>
+      </div>
+      <div class="pv-context-item">
+        <span class="pv-context-label">Tunnel Protocol</span>
+        <span class="pv-context-value text-[#b4cdb8]">TLS_1.3_ENCRYPTED</span>
+      </div>
+      <div class="pv-context-item">
+        <span class="pv-context-label">State</span>
+        <span class="pv-context-value text-[#dfc38f]">ROUTING_TO_ISSUER</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

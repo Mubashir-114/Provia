@@ -1,0 +1,48 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+env/
+venv/
+.venv/
+
+# Django & Media
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/*
+!.gitkeep
+staticfiles/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Browser Profiles & Agent Tooling
+.codex-chrome-profile/
+.kilo/
+
+# Local Cookies
+cookie.jar
+
+# Temporary Development Artifacts
+scratch/
+
+# Design & Agent Artifacts
+stitch_extracted/
+
+# Editor & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

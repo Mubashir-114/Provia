@@ -1,0 +1,882 @@
+{% extends "base.html" %}
+{% block title %}PROVIA — Payment Experience V2 (10 Screens Specification){% endblock %}
+
+{% block content %}
+<div class="pv-blueprint-canvas min-h-screen py-10 px-4 sm:px-6 lg:px-12 text-[#e4e2df]">
+  
+  <!-- Showcase Header & Navigation Hub -->
+  <div class="max-w-7xl mx-auto mb-10 pb-6 border-b border-[#343533]">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono text-[#b4cdb8]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#b4cdb8]"></span>
+            PROVIA PAYMENT V2
+          </span>
+          <span class="text-xs font-mono text-[#a4aba4]">10 SCREENS SPECIFICATION</span>
+        </div>
+        <h1 class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#e4e2df]">
+          Payment Experience Redesign
+        </h1>
+        <p class="text-xs sm:text-sm text-[#c3c8c1] mt-1 max-w-2xl leading-relaxed">
+          Architectural Dark system, responsive 12-col Desktop & 4-col Mobile grids, zero dead space, custom geometric verification glyphs, and emotionally balanced feedback states.
+        </p>
+      </div>
+
+      <!-- Quick Controls: Screen Quick Jump & Motion Toggle -->
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          id="motion-toggle"
+          onclick="toggleReducedMotion()"
+          class="btn btn-outline text-xs font-mono py-2 px-3 flex items-center gap-1.5 cursor-pointer"
+        >
+          <span class="w-2 h-2 rounded-full bg-[#dfc38f]" id="motion-dot"></span>
+          <span id="motion-label">Motion: Full (600-900ms)</span>
+        </button>
+
+        <a href="#screen-01" class="btn btn-primary text-xs font-bold py-2 px-4">
+          Start Screen Flow &darr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Screen Matrix Quick Jump Navigator -->
+    <div class="mt-6 flex flex-wrap gap-2 pt-4 border-t border-[#262825]">
+      <a href="#screen-01" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#b4cdb8] text-[#e4e2df] transition">01 Checkout Desktop</a>
+      <a href="#screen-02" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#b4cdb8] text-[#e4e2df] transition">02 Checkout Mobile</a>
+      <a href="#screen-03" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#dfc38f] text-[#dfc38f] transition">03 Processing Desktop</a>
+      <a href="#screen-04" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#dfc38f] text-[#dfc38f] transition">04 Processing Mobile</a>
+      <a href="#screen-05" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#b4cdb8] text-[#b4cdb8] transition">05 Success Desktop ✨</a>
+      <a href="#screen-06" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#b4cdb8] text-[#b4cdb8] transition">06 Success Mobile ✨</a>
+      <a href="#screen-07" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#e58f8f] text-[#e58f8f] transition">07 Failed Desktop 😕</a>
+      <a href="#screen-08" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#e58f8f] text-[#e58f8f] transition">08 Failed Mobile 😕</a>
+      <a href="#screen-09" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#dfc38f] text-[#dfc38f] transition">09 Retry Desktop</a>
+      <a href="#screen-10" class="px-2.5 py-1 rounded bg-[#1b1c1a] border border-[#343533] text-[11px] font-mono hover:border-[#dfc38f] text-[#dfc38f] transition">10 Retry Mobile</a>
+    </div>
+  </div>
+
+  <!-- ALL 10 SCREENS SEQUENTIAL SPECIFICATION -->
+  <div class="max-w-7xl mx-auto space-y-16">
+
+    <!-- ============================================================
+         01 CHECKOUT DESKTOP
+         ============================================================ -->
+    <section id="screen-01" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#b4cdb8] text-[#0d0e0d]">01</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Checkout Desktop</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(12-Column Grid · 2-Zone Composition · Zero Dead Space)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">STATE: CALM / TRUSTWORTHY</span>
+      </div>
+
+      <!-- Screen Frame Simulation -->
+      <div class="rounded-xl border border-[#343533] bg-[#0d0e0d] p-6 lg:p-8 pv-reg-corner shadow-2xl">
+        
+        <!-- Screen Top Bar -->
+        <div class="flex items-center justify-between border-b border-[#262825] pb-4 mb-6">
+          <div class="flex items-center gap-2">
+            <span class="font-display font-bold text-base tracking-tight text-[#e4e2df]">PROVIA</span>
+            <span class="text-xs text-[#6f756f]">/</span>
+            <span class="text-xs font-mono text-[#a4aba4]">CHECKOUT</span>
+          </div>
+
+          <div class="pv-journey-stepper">
+            <span class="pv-journey-step completed"><span class="font-mono text-[#b4cdb8]">01</span> REVIEW</span>
+            <span class="pv-journey-divider active-trail"></span>
+            <span class="pv-journey-step active">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#b4cdb8]"></span>
+              <span class="font-mono text-[#b4cdb8]">02</span> PAYMENT
+            </span>
+            <span class="pv-journey-divider"></span>
+            <span class="pv-journey-step future"><span class="font-mono text-[#6f756f]">03</span> CONFIRM</span>
+          </div>
+        </div>
+
+        <!-- 2-Zone Desktop Layout -->
+        <div class="grid grid-cols-12 gap-8">
+          
+          <!-- Left Zone (7 cols): Form & Authorization -->
+          <div class="col-span-12 lg:col-span-7 space-y-5">
+            <div class="rounded-lg border border-[#343533] bg-[#1b1c1a] p-6 space-y-5">
+              <div class="border-b border-[#343533] pb-4">
+                <p class="text-[11px] font-mono uppercase tracking-wider text-[#b4cdb8]">Payment Authorization</p>
+                <h3 class="font-display text-2xl font-bold text-[#e4e2df] mt-1">Complete Your Payment</h3>
+                <p class="text-xs text-[#c3c8c1] mt-0.5">Authorize transaction to confirm and lock in your scheduled specialist.</p>
+              </div>
+
+              <!-- Payment Method Selector -->
+              <div>
+                <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-2">Payment Method</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="p-3 rounded-lg border border-[#b4cdb8] bg-[#121412] flex items-center justify-between">
+                    <div>
+                      <p class="text-xs font-bold text-[#e4e2df]">Credit / Debit Card</p>
+                      <p class="text-[10px] text-[#a4aba4] font-mono">Instant verification</p>
+                    </div>
+                    <span class="w-2 h-2 rounded-full bg-[#b4cdb8]"></span>
+                  </div>
+                  <div class="p-3 rounded-lg border border-[#343533] bg-[#121412] opacity-75 flex items-center justify-between">
+                    <div>
+                      <p class="text-xs font-bold text-[#e4e2df]">UPI / NetBanking</p>
+                      <p class="text-[10px] text-[#a4aba4] font-mono">VPA / QR Code</p>
+                    </div>
+                    <span class="w-2 h-2 rounded-full bg-[#343533]"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Inputs -->
+              <div class="space-y-3 pt-1">
+                <div>
+                  <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-1">Cardholder Name</label>
+                  <input type="text" readonly value="Rahul Sharma" class="w-full bg-[#0d0e0d] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-sans" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-1">Card Number</label>
+                  <div class="relative">
+                    <input type="text" readonly value="4242 •••• •••• 8829" class="w-full bg-[#0d0e0d] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono tracking-wider" />
+                    <span class="absolute right-2.5 top-2 text-[10px] font-mono text-[#b4cdb8] bg-[#1b1c1a] px-1.5 py-0.5 rounded border border-[#343533]">VISA</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-1">Expiry Date</label>
+                    <input type="text" readonly value="08/29" class="w-full bg-[#0d0e0d] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-1">Security Code (CVV)</label>
+                    <input type="password" readonly value="•••" class="w-full bg-[#0d0e0d] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Security Reassurance Strip -->
+              <div class="flex items-center gap-2 p-2.5 rounded bg-[#0d0e0d] border border-[#343533] text-[11px] text-[#a4aba4]">
+                <svg class="w-3.5 h-3.5 text-[#b4cdb8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <span>Secure payment. Encrypted transaction routing tunnel.</span>
+              </div>
+
+              <!-- CTA -->
+              <button class="btn btn-primary w-full py-3 font-display font-bold text-sm">
+                Authorize Payment &bull; ₹2,450.00 &rarr;
+              </button>
+            </div>
+
+            <!-- Transaction Context Block -->
+            <div class="pv-context-block">
+              <div class="pv-context-item">
+                <span class="pv-context-label">Booking</span>
+                <span class="pv-context-value">PV-000036</span>
+              </div>
+              <div class="pv-context-item">
+                <span class="pv-context-label">Transaction</span>
+                <span class="pv-context-value text-[#dfc38f]">TX-82A4-91</span>
+              </div>
+              <div class="pv-context-item">
+                <span class="pv-context-label">Status</span>
+                <span class="pv-context-value text-[#b4cdb8]">READY_FOR_AUTH</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Zone (5 cols): Spec Sheet -->
+          <div class="col-span-12 lg:col-span-5 space-y-5">
+            <div class="rounded-lg border border-[#343533] bg-[#1b1c1a] p-6 space-y-4">
+              <div class="flex items-center justify-between border-b border-[#343533] pb-3">
+                <span class="text-xs font-mono uppercase text-[#a4aba4]">Booking Spec</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#292a28] text-[#b4cdb8] border border-[#343533]">CONFIRMED_SLOT</span>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-mono text-[#b4cdb8] uppercase">Home Diagnostics</span>
+                <h4 class="font-display text-base font-bold text-[#e4e2df] mt-0.5">Deep Clean & HVAC Diagnostics</h4>
+                <p class="text-xs text-[#a4aba4]">Specialist: <span class="text-[#e4e2df] font-medium">Aris Thorne (Rating: 4.9 &bull; 420+ jobs)</span></p>
+              </div>
+
+              <div class="pv-spec-sheet">
+                <div class="pv-spec-row"><span class="pv-spec-label">Service Date</span><span class="pv-spec-value">Sat, 22 Aug 2026</span></div>
+                <div class="pv-spec-row"><span class="pv-spec-label">Time Window</span><span class="pv-spec-value text-[#b4cdb8]">10:00 – 12:30 IST</span></div>
+                <div class="pv-spec-row"><span class="pv-spec-label">Duration</span><span class="pv-spec-value">2.5 Hours</span></div>
+                <div class="pv-spec-row"><span class="pv-spec-label">Base Service</span><span class="pv-spec-value">₹2,200.00</span></div>
+                <div class="pv-spec-row"><span class="pv-spec-label">Sanitation & Kits</span><span class="pv-spec-value">₹250.00</span></div>
+                <div class="pv-spec-row pv-spec-total">
+                  <div><span class="block text-xs font-mono uppercase text-[#a4aba4]">Total Due</span><span class="text-[10px] font-mono text-[#6f756f]">INR</span></div>
+                  <span class="font-mono text-2xl font-bold text-[#e4e2df]">₹2,450.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         02 CHECKOUT MOBILE
+         ============================================================ -->
+    <section id="screen-02" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#b4cdb8] text-[#0d0e0d]">02</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Checkout Mobile</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(390px Viewport · Vertical Rhythm · No Dead Zones)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">4-COLUMN GRID</span>
+      </div>
+
+      <!-- Mobile Device Frame -->
+      <div class="mx-auto max-w-[390px] rounded-2xl border border-[#343533] bg-[#0d0e0d] p-4 pv-reg-corner shadow-2xl space-y-4">
+        
+        <!-- Mobile Header -->
+        <div class="flex items-center justify-between border-b border-[#262825] pb-3">
+          <span class="font-display text-sm font-bold text-[#e4e2df]">PROVIA</span>
+          <div class="pv-journey-stepper text-[10px]">
+            <span class="pv-journey-step completed">01</span>
+            <span class="text-[#343533]">&mdash;</span>
+            <span class="pv-journey-step active font-bold text-[#b4cdb8]">02 PAY</span>
+            <span class="text-[#343533]">&mdash;</span>
+            <span class="pv-journey-step future">03</span>
+          </div>
+        </div>
+
+        <!-- Booking Summary Card -->
+        <div class="rounded-lg border border-[#343533] bg-[#1b1c1a] p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-[#b4cdb8] bg-[#292a28] px-1.5 py-0.5 rounded">PV-000036</span>
+            <span class="text-[10px] font-mono text-[#dfc38f]">₹2,450.00</span>
+          </div>
+          <h3 class="font-display text-sm font-bold text-[#e4e2df]">Deep Clean & HVAC Diagnostics</h3>
+          <p class="text-[11px] text-[#a4aba4]">Sat, 22 Aug &bull; 10:00 – 12:30 IST &bull; Aris Thorne</p>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div class="grid grid-cols-2 gap-2">
+          <button class="p-2 rounded border border-[#b4cdb8] bg-[#1b1c1a] text-left">
+            <p class="text-[11px] font-bold text-[#e4e2df]">Card</p>
+            <p class="text-[9px] font-mono text-[#b4cdb8]">Instant Auth</p>
+          </button>
+          <button class="p-2 rounded border border-[#343533] bg-[#121412] text-left opacity-75">
+            <p class="text-[11px] font-bold text-[#e4e2df]">UPI</p>
+            <p class="text-[9px] font-mono text-[#a4aba4]">GPay / PhonePe</p>
+          </button>
+        </div>
+
+        <!-- Mobile Form Fields -->
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[10px] font-mono uppercase text-[#a4aba4] mb-1">Card Number</label>
+            <input type="text" readonly value="4242 •••• •••• 8829" class="w-full bg-[#1b1c1a] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-mono uppercase text-[#a4aba4] mb-1">Expiry</label>
+              <input type="text" readonly value="08/29" class="w-full bg-[#1b1c1a] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono uppercase text-[#a4aba4] mb-1">CVV</label>
+              <input type="password" readonly value="•••" class="w-full bg-[#1b1c1a] border border-[#343533] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Strip -->
+        <div class="flex items-center gap-2 p-2 rounded bg-[#121412] border border-[#343533] text-[10px] text-[#a4aba4]">
+          <svg class="w-3 h-3 text-[#b4cdb8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Secure payment &bull; Encrypted gateway</span>
+        </div>
+
+        <!-- Primary Mobile CTA -->
+        <button class="btn btn-primary w-full py-3 font-display font-bold text-sm shadow">
+          Pay ₹2,450.00 &rarr;
+        </button>
+
+        <div class="text-center">
+          <span class="text-[10px] font-mono text-[#6f756f]">TX-82A4-91 &bull; PROVIA SECURE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         03 PROCESSING DESKTOP
+         ============================================================ -->
+    <section id="screen-03" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#dfc38f] text-[#0d0e0d]">03</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Processing Desktop</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(Custom Architectural Geometric Mark · Verification Loop · Alive)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#dfc38f]">STATE: FOCUSED / ALIVE</span>
+      </div>
+
+      <div class="rounded-xl border border-[#343533] bg-[#0d0e0d] p-8 pv-reg-corner shadow-2xl max-w-4xl mx-auto space-y-8 text-center">
+        
+        <!-- Top Metadata Strip -->
+        <div class="flex items-center justify-between border-b border-[#262825] pb-4">
+          <div class="flex items-center gap-2 font-mono text-xs text-[#a4aba4]">
+            <span class="text-[#e4e2df] font-bold">PROVIA</span>
+            <span class="text-[#343533]">|</span>
+            <span>GATEWAY_ROUTER</span>
+          </div>
+          <div class="inline-flex items-center gap-2 rounded bg-[#1b1c1a] border border-[#343533] px-3 py-1 text-xs font-mono text-[#dfc38f]">
+            <span class="w-2 h-2 rounded-full bg-[#dfc38f] animate-ping"></span>
+            <span>VERIFYING: TX-82A4-91</span>
+          </div>
+        </div>
+
+        <!-- Center: Custom Architectural Geometric Mark -->
+        <div class="relative flex items-center justify-center my-6">
+          <div class="relative w-40 h-40 flex items-center justify-center">
+            
+            <!-- Framing Box & Ticks -->
+            <svg class="absolute inset-0 w-full h-full text-[#343533]" viewBox="0 0 120 120" fill="none">
+              <path d="M 8 20 L 8 8 L 20 8" stroke="#434843" stroke-width="1.5" />
+              <path d="M 100 8 L 112 8 L 112 20" stroke="#434843" stroke-width="1.5" />
+              <path d="M 112 100 L 112 112 L 100 112" stroke="#434843" stroke-width="1.5" />
+              <path d="M 20 112 L 8 112 L 8 100" stroke="#434843" stroke-width="1.5" />
+              <circle cx="60" cy="60" r="50" stroke="#262825" stroke-width="1" stroke-dasharray="3 4" />
+            </svg>
+
+            <!-- Dynamic Animated Rectangular Track & Scanline -->
+            <svg class="w-32 h-32 pv-proc-pulse" viewBox="0 0 100 100" fill="none">
+              <rect x="15" y="15" width="70" height="70" rx="4" stroke="#b4cdb8" stroke-width="1.5" class="pv-proc-frame" />
+              <g class="pv-proc-scanline">
+                <line x1="20" y1="50" x2="80" y2="50" stroke="#dfc38f" stroke-width="1.5" />
+                <line x1="28" y1="50" x2="72" y2="50" stroke="#d0e9d3" stroke-width="2.5" />
+              </g>
+              <path d="M 38 52 L 47 61 L 65 41" stroke="#dfc38f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pv-proc-glyph" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-display text-3xl font-bold text-[#e4e2df]">Processing Payment</h3>
+          <p class="text-sm text-[#c3c8c1] max-w-lg mx-auto leading-relaxed">
+            Please don't close or refresh this window while we verify authorization with your issuing institution.
+          </p>
+        </div>
+
+        <!-- Bottom Structured Context Block (Replaces Empty Void) -->
+        <div class="pv-spec-sheet max-w-xl mx-auto text-left">
+          <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC Diagnostics</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Assigned Specialist</span><span class="pv-spec-value">Aris Thorne</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Transaction Ref</span><span class="pv-spec-value text-[#dfc38f]">TX-82A4-91</span></div>
+          <div class="pv-spec-row pv-spec-total">
+            <span class="text-xs font-mono uppercase text-[#a4aba4]">Authorization Amount</span>
+            <span class="font-mono text-2xl font-bold text-[#e4e2df]">₹2,450.00</span>
+          </div>
+        </div>
+
+        <!-- Technical Footer -->
+        <div class="pv-context-block text-left">
+          <div class="pv-context-item"><span class="pv-context-label">Booking</span><span class="pv-context-value">PV-000036</span></div>
+          <div class="pv-context-item"><span class="pv-context-label">Encryption</span><span class="pv-context-value text-[#b4cdb8]">TLS_1.3_VERIFIED</span></div>
+          <div class="pv-context-item"><span class="pv-context-label">Status</span><span class="pv-context-value text-[#dfc38f]">ROUTING_TO_ISSUER</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         04 PROCESSING MOBILE
+         ============================================================ -->
+    <section id="screen-04" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#dfc38f] text-[#0d0e0d]">04</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Processing Mobile</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(390px Viewport · Compact Geometric Mark · Zero Black Voids)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#dfc38f]">MOBILE VERIFICATION</span>
+      </div>
+
+      <div class="mx-auto max-w-[390px] rounded-2xl border border-[#343533] bg-[#0d0e0d] p-5 pv-reg-corner shadow-2xl space-y-5 text-center">
+        
+        <div class="flex items-center justify-between border-b border-[#262825] pb-3">
+          <span class="font-display text-sm font-bold text-[#e4e2df]">PROVIA</span>
+          <span class="text-[10px] font-mono text-[#dfc38f] bg-[#1b1c1a] px-2 py-0.5 rounded border border-[#343533]">TX-82A4-91</span>
+        </div>
+
+        <!-- Animated Mark Mobile -->
+        <div class="relative w-24 h-24 mx-auto flex items-center justify-center">
+          <svg class="absolute inset-0 w-full h-full text-[#343533]" viewBox="0 0 100 100" fill="none">
+            <path d="M 6 16 L 6 6 L 16 6" stroke="#434843" stroke-width="1.5" />
+            <path d="M 84 6 L 94 6 L 94 16" stroke="#434843" stroke-width="1.5" />
+            <path d="M 94 84 L 94 94 L 84 94" stroke="#434843" stroke-width="1.5" />
+            <path d="M 16 94 L 6 94 L 6 84" stroke="#434843" stroke-width="1.5" />
+          </svg>
+          <svg class="w-20 h-20 pv-proc-pulse" viewBox="0 0 100 100" fill="none">
+            <rect x="18" y="18" width="64" height="64" rx="4" stroke="#b4cdb8" stroke-width="1.5" class="pv-proc-frame" />
+            <path d="M 38 52 L 47 61 L 65 41" stroke="#dfc38f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="pv-proc-glyph" />
+          </svg>
+        </div>
+
+        <div>
+          <h3 class="font-display text-lg font-bold text-[#e4e2df]">Processing Payment</h3>
+          <p class="text-xs text-[#c3c8c1] mt-1 leading-snug">Verifying authorization with your issuing institution...</p>
+        </div>
+
+        <!-- Amount & Spec Snapshot -->
+        <div class="pv-spec-sheet text-left">
+          <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Booking</span><span class="pv-spec-value text-[#dfc38f]">#PV-000036</span></div>
+          <div class="pv-spec-row pv-spec-total">
+            <span class="text-xs font-mono text-[#a4aba4]">Amount</span>
+            <span class="font-mono text-lg font-bold text-[#e4e2df]">₹2,450.00</span>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded bg-[#121412] border border-[#343533] text-[10px] text-[#a4aba4]">
+          Please do not close this browser tab.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         05 SUCCESS DESKTOP
+         ============================================================ -->
+    <section id="screen-05" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#b4cdb8] text-[#0d0e0d]">05</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Success Desktop</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(Relieving · Memorable · Subtle ✨ Accent · Double Ledger)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">STATE: RELIEVING / MEMORABLE</span>
+      </div>
+
+      <div class="rounded-xl border border-[#343533] bg-[#0d0e0d] p-8 lg:p-10 pv-reg-corner shadow-2xl max-w-5xl mx-auto space-y-8 pv-success-entrance">
+        
+        <!-- Header with Journey Completed -->
+        <div class="flex items-center justify-between border-b border-[#262825] pb-4">
+          <span class="font-display font-bold text-base text-[#e4e2df]">PROVIA</span>
+          <div class="pv-journey-stepper">
+            <span class="pv-journey-step completed"><span class="font-mono text-[#b4cdb8]">01</span> REVIEW</span>
+            <span class="pv-journey-divider active-trail"></span>
+            <span class="pv-journey-step completed"><span class="font-mono text-[#b4cdb8]">02</span> PAYMENT</span>
+            <span class="pv-journey-divider active-trail"></span>
+            <span class="pv-journey-step active font-bold text-[#b4cdb8]"><span class="font-mono text-[#b4cdb8]">03</span> CONFIRMED</span>
+          </div>
+        </div>
+
+        <!-- Hero: Architectural Success Mark & Heading -->
+        <div class="text-center space-y-3">
+          <div class="inline-flex items-center justify-center relative">
+            <svg class="w-18 h-18 text-[#343533]" viewBox="0 0 80 80" fill="none">
+              <rect x="6" y="6" width="68" height="68" rx="10" stroke="#434843" stroke-width="1.5" />
+              <circle cx="40" cy="40" r="30" stroke="#b4cdb8" stroke-width="1.5" fill="#121412" />
+            </svg>
+            <svg class="absolute w-9 h-9 text-[#b4cdb8]" viewBox="0 0 40 40" fill="none">
+              <path d="M 12 21 L 18 27 L 29 14" stroke="#b4cdb8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pv-success-check" />
+            </svg>
+            <span class="absolute -top-1 -right-2 text-lg pv-success-sparkle select-none">✨</span>
+          </div>
+
+          <div>
+            <h3 class="font-display text-3xl sm:text-4xl font-bold text-[#e4e2df]">Payment Successful</h3>
+            <p class="text-sm text-[#c3c8c1] max-w-md mx-auto mt-1">Your service appointment is locked in and confirmed.</p>
+          </div>
+        </div>
+
+        <!-- Double Column Information Zone (Eliminates Empty Space) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h4 class="text-[11px] font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-1.5">
+              <span class="w-1 h-3 bg-[#b4cdb8] rounded-sm"></span> Confirmed Service Details
+            </h4>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC Diagnostics</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Specialist</span><span class="pv-spec-value">Aris Thorne</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Appointment</span><span class="pv-spec-value">Sat, 22 Aug 2026</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Time Window</span><span class="pv-spec-value text-[#b4cdb8]">10:00 – 12:30 IST</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Booking ID</span><span class="pv-spec-value text-[#dfc38f]">#PV-000036</span></div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-[11px] font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-1.5">
+              <span class="w-1 h-3 bg-[#dfc38f] rounded-sm"></span> Payment Ledger
+            </h4>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row"><span class="pv-spec-label">Transaction ID</span><span class="pv-spec-value font-mono">TX-82A4-91</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Payment Method</span><span class="pv-spec-value">Card (Visa ending 8829)</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Auth Timestamp</span><span class="pv-spec-value font-mono">2026-08-21 19:48:02</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Status</span><span class="pv-spec-value text-[#b4cdb8]">CAPTURED_SUCCESS</span></div>
+              <div class="pv-spec-row pv-spec-total">
+                <span class="text-xs font-mono uppercase text-[#a4aba4]">Total Paid</span>
+                <span class="font-mono text-2xl font-bold text-[#e4e2df]">₹2,450.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#343533] pt-6">
+          <button class="btn btn-outline w-full sm:w-auto text-xs px-5 py-2.5">
+            Download PDF Receipt
+          </button>
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <button class="btn btn-primary w-full sm:w-auto text-sm px-6 py-2.5 font-bold">
+              View Confirmed Booking &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         06 SUCCESS MOBILE
+         ============================================================ -->
+    <section id="screen-06" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#b4cdb8] text-[#0d0e0d]">06</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Success Mobile</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(390px Viewport · Relief Flow · Quick CTA)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">CONFIRMED ✨</span>
+      </div>
+
+      <div class="mx-auto max-w-[390px] rounded-2xl border border-[#343533] bg-[#0d0e0d] p-5 pv-reg-corner shadow-2xl space-y-4 pv-success-entrance">
+        <div class="text-center space-y-2">
+          <div class="inline-flex items-center justify-center relative my-1">
+            <div class="w-12 h-12 rounded-full bg-[#121412] border border-[#b4cdb8] flex items-center justify-center">
+              <svg class="w-6 h-6 text-[#b4cdb8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <span class="absolute -top-1 -right-1 text-sm select-none">✨</span>
+          </div>
+          <h3 class="font-display text-lg font-bold text-[#e4e2df]">Payment Successful</h3>
+          <p class="text-xs text-[#c3c8c1]">Your service appointment is locked in.</p>
+        </div>
+
+        <div class="pv-spec-sheet">
+          <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Specialist</span><span class="pv-spec-value">Aris Thorne</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Time</span><span class="pv-spec-value text-[#b4cdb8]">Sat 22 Aug, 10:00</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Ref</span><span class="pv-spec-value text-[#dfc38f]">#PV-000036</span></div>
+          <div class="pv-spec-row pv-spec-total">
+            <span class="text-xs font-mono text-[#a4aba4]">Paid</span>
+            <span class="font-mono text-xl font-bold text-[#e4e2df]">₹2,450.00</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-full py-3 font-display font-bold text-sm">
+          View Booking &rarr;
+        </button>
+        <button class="btn btn-outline w-full py-2.5 text-xs">
+          Return to Dashboard
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         07 FAILED DESKTOP
+         ============================================================ -->
+    <section id="screen-07" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#e58f8f] text-[#0d0e0d]">07</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Failed Desktop</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(Human · Sparing Coral · Subtle 😕 Accent · Preserved Context)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#e58f8f]">STATE: HUMAN / CALM</span>
+      </div>
+
+      <div class="rounded-xl border border-[#343533] bg-[#0d0e0d] p-8 lg:p-10 pv-reg-corner shadow-2xl max-w-5xl mx-auto space-y-8 pv-failure-entrance">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-[#262825] pb-4">
+          <span class="font-display font-bold text-base text-[#e4e2df]">PROVIA</span>
+          <div class="pv-recovery-track">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-coral">01 FAILED</span>
+            <span class="text-[#6f756f] text-xs">&rarr;</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-neutral">02 RESET</span>
+            <span class="text-[#6f756f] text-xs">&rarr;</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-green">03 READY</span>
+          </div>
+        </div>
+
+        <!-- Failure Hero -->
+        <div class="flex flex-col sm:flex-row items-center gap-5 border-b border-[#262825] pb-6">
+          <div class="w-16 h-16 rounded-xl bg-[#121412] border border-[#e58f8f]/40 flex items-center justify-center shrink-0">
+            <svg class="w-8 h-8 text-[#e58f8f]" viewBox="0 0 24 24" fill="none"><path d="M 6 6 L 18 18 M 18 6 L 6 18" stroke="#e58f8f" stroke-width="2" stroke-linecap="round" class="pv-failure-cross"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-display text-2xl sm:text-3xl font-bold text-[#e4e2df]">Payment Could Not Be Completed</h3>
+              <span class="text-xl select-none" title="Notice">😕</span>
+            </div>
+            <p class="text-xs sm:text-sm text-[#c3c8c1] mt-1">We couldn't authorize this transaction with your issuing institution. No funds were debited.</p>
+          </div>
+        </div>
+
+        <!-- Diagnostic & Preserved Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h4 class="text-[11px] font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-1.5">
+              <span class="w-1 h-3 bg-[#e58f8f] rounded-sm"></span> Authorization Diagnostics
+            </h4>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row"><span class="pv-spec-label">Failure Code</span><span class="pv-spec-value text-[#e58f8f] font-mono">ERR_AUTH_DECLINED</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Gateway Message</span><span class="pv-spec-value text-[11px]">Bank declined transaction authorization.</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Card Debited</span><span class="pv-spec-value text-[#b4cdb8]">NO (₹0.00)</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Attempt Reference</span><span class="pv-spec-value text-[#dfc38f] font-mono">TX-82A4-91</span></div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-[11px] font-mono uppercase tracking-wider text-[#a4aba4] flex items-center gap-1.5">
+              <span class="w-1 h-3 bg-[#b4cdb8] rounded-sm"></span> Preserved Booking
+            </h4>
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC Diagnostics</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Specialist</span><span class="pv-spec-value">Aris Thorne</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Slot Preserved</span><span class="pv-spec-value text-[#b4cdb8]">Sat 22 Aug, 10:00</span></div>
+              <div class="pv-spec-row pv-spec-total">
+                <span class="text-xs font-mono uppercase text-[#a4aba4]">Amount Due</span>
+                <span class="font-mono text-2xl font-bold text-[#e4e2df]">₹2,450.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#343533] pt-6">
+          <button class="btn btn-outline w-full sm:w-auto text-xs px-5 py-2.5">
+            Return to Booking
+          </button>
+          <button class="btn btn-brass w-full sm:w-auto text-sm px-6 py-2.5 font-bold">
+            Let's Try That Again &bull; Retry Payment &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         08 FAILED MOBILE
+         ============================================================ -->
+    <section id="screen-08" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#e58f8f] text-[#0d0e0d]">08</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Failed Mobile</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(390px Viewport · Sparing Coral · Calm Recovery Action)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#e58f8f]">DECLINED 😕</span>
+      </div>
+
+      <div class="mx-auto max-w-[390px] rounded-2xl border border-[#343533] bg-[#0d0e0d] p-5 pv-reg-corner shadow-2xl space-y-4 pv-failure-entrance">
+        <div class="text-center space-y-2">
+          <div class="w-12 h-12 rounded-full bg-[#121412] border border-[#e58f8f]/50 mx-auto flex items-center justify-center">
+            <svg class="w-6 h-6 text-[#e58f8f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+          <div class="flex items-center justify-center gap-1.5">
+            <h3 class="font-display text-lg font-bold text-[#e4e2df]">Payment Unsuccessful</h3>
+            <span class="text-base select-none">😕</span>
+          </div>
+          <p class="text-xs text-[#c3c8c1]">Authorization declined. No charges made to your card.</p>
+        </div>
+
+        <div class="pv-spec-sheet">
+          <div class="pv-spec-row"><span class="pv-spec-label">Diagnostic</span><span class="pv-spec-value text-[#e58f8f] text-[10px]">ERR_AUTH_DECLINED</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Tx Ref</span><span class="pv-spec-value text-[#dfc38f]">TX-82A4-91</span></div>
+          <div class="pv-spec-row pv-spec-total">
+            <span class="text-xs font-mono text-[#a4aba4]">Amount Due</span>
+            <span class="font-mono text-xl font-bold text-[#e4e2df]">₹2,450.00</span>
+          </div>
+        </div>
+
+        <button class="btn btn-brass w-full py-3 font-display font-bold text-sm">
+          Try Again &rarr;
+        </button>
+        <button class="btn btn-outline w-full py-2.5 text-xs">
+          Return to Booking
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         09 RETRY DESKTOP
+         ============================================================ -->
+    <section id="screen-09" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#dfc38f] text-[#0d0e0d]">09</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Retry Desktop</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(Encouraging Workspace · Transition Signals · Pre-Filled Data)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">STATE: RECOVERY WORKSPACE</span>
+      </div>
+
+      <div class="rounded-xl border border-[#343533] bg-[#0d0e0d] p-8 lg:p-10 pv-reg-corner shadow-2xl max-w-5xl mx-auto space-y-6">
+        
+        <div class="flex items-center justify-between border-b border-[#262825] pb-4">
+          <div class="flex items-center gap-2">
+            <span class="font-display font-bold text-base text-[#e4e2df]">PROVIA</span>
+            <span class="text-xs text-[#6f756f]">/</span>
+            <span class="text-xs font-mono text-[#dfc38f]">PAYMENT RECOVERY</span>
+          </div>
+          <div class="pv-recovery-track">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-coral opacity-60">01 FAILED</span>
+            <span class="text-[#6f756f] text-xs">&rarr;</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-neutral opacity-80">02 RESET</span>
+            <span class="text-[#6f756f] text-xs">&rarr;</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded pv-state-pill-green">03 READY FOR RETRY</span>
+          </div>
+        </div>
+
+        <div class="border-b border-[#262825] pb-4">
+          <h3 class="font-display text-2xl sm:text-3xl font-bold text-[#e4e2df]">Let's Try That Again</h3>
+          <p class="text-xs sm:text-sm text-[#c3c8c1] mt-1">Your booking details are preserved. Complete the payment authorization to continue.</p>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+          
+          <!-- Left: Payment Recovery Input -->
+          <div class="col-span-12 lg:col-span-7 space-y-4">
+            <div class="rounded-lg border border-[#343533] bg-[#1b1c1a] p-5 space-y-4">
+              <span class="text-[11px] font-mono uppercase text-[#b4cdb8]">Payment Method Ready</span>
+              
+              <div class="p-3 rounded-lg border border-[#b4cdb8] bg-[#121412] flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold text-[#e4e2df]">Credit Card (Visa ending 8829)</p>
+                  <p class="text-[10px] font-mono text-[#a4aba4]">Re-enter CVV to re-authorize</p>
+                </div>
+                <span class="text-[10px] font-mono text-[#dfc38f] bg-[#1b1c1a] px-2 py-0.5 rounded border border-[#343533]">RELOADED</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-mono uppercase text-[#a4aba4] mb-1">Security Code (CVV)</label>
+                  <input type="password" value="888" class="w-full bg-[#0d0e0d] border border-[#dfc38f] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+                </div>
+                <div class="flex items-end">
+                  <button class="btn btn-outline w-full py-2 text-xs">Use Alternate Card</button>
+                </div>
+              </div>
+
+              <button class="btn btn-primary w-full py-3 font-display font-bold text-sm">
+                Authorize Payment &bull; ₹2,450.00 &rarr;
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Preserved Summary -->
+          <div class="col-span-12 lg:col-span-5 space-y-4">
+            <div class="pv-spec-sheet">
+              <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Specialist</span><span class="pv-spec-value">Aris Thorne</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Date & Time</span><span class="pv-spec-value text-[#b4cdb8]">Sat 22 Aug, 10:00</span></div>
+              <div class="pv-spec-row"><span class="pv-spec-label">Previous Attempt</span><span class="pv-spec-value text-[#e58f8f]">TX-82A4-91 (Declined)</span></div>
+              <div class="pv-spec-row pv-spec-total">
+                <span class="text-xs font-mono uppercase text-[#a4aba4]">Total Due</span>
+                <span class="font-mono text-2xl font-bold text-[#e4e2df]">₹2,450.00</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pv-context-block">
+          <div class="pv-context-item"><span class="pv-context-label">Booking</span><span class="pv-context-value">PV-000036</span></div>
+          <div class="pv-context-item"><span class="pv-context-label">Recovery Session</span><span class="pv-context-value text-[#dfc38f]">TX-82A4-92</span></div>
+          <div class="pv-context-item"><span class="pv-context-label">System State</span><span class="pv-context-value text-[#b4cdb8]">READY_RETRY</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         10 RETRY MOBILE
+         ============================================================ -->
+    <section id="screen-10" class="scroll-mt-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#343533] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#dfc38f] text-[#0d0e0d]">10</span>
+          <h2 class="font-display text-xl font-bold text-[#e4e2df]">Retry Mobile</h2>
+          <span class="text-xs font-mono text-[#a4aba4]">(390px Viewport · Re-entry Flow · Preserved Booking)</span>
+        </div>
+        <span class="text-[11px] font-mono text-[#b4cdb8]">MOBILE RECOVERY</span>
+      </div>
+
+      <div class="mx-auto max-w-[390px] rounded-2xl border border-[#343533] bg-[#0d0e0d] p-5 pv-reg-corner shadow-2xl space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-[#262825] pb-2">
+          <span class="font-display text-sm font-bold text-[#e4e2df]">PROVIA</span>
+          <span class="text-[10px] font-mono text-[#b4cdb8] bg-[#1b1c1a] px-2 py-0.5 rounded border border-[#343533]">RETRY ACTIVE</span>
+        </div>
+
+        <div>
+          <h3 class="font-display text-base font-bold text-[#e4e2df]">Let's Try That Again</h3>
+          <p class="text-xs text-[#c3c8c1] mt-0.5">Booking details preserved. Enter CVV to authorize.</p>
+        </div>
+
+        <div class="pv-spec-sheet">
+          <div class="pv-spec-row"><span class="pv-spec-label">Card</span><span class="pv-spec-value">Visa •••• 8829</span></div>
+          <div class="pv-spec-row"><span class="pv-spec-label">Service</span><span class="pv-spec-value">Deep Clean & HVAC</span></div>
+          <div class="pv-spec-row pv-spec-total">
+            <span class="text-xs font-mono text-[#a4aba4]">Amount</span>
+            <span class="font-mono text-xl font-bold text-[#e4e2df]">₹2,450.00</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono uppercase text-[#a4aba4] mb-1">Enter CVV Code</label>
+          <input type="password" value="888" class="w-full bg-[#1b1c1a] border border-[#dfc38f] text-[#e4e2df] rounded p-2 text-xs font-mono" />
+        </div>
+
+        <button class="btn btn-primary w-full py-3 font-display font-bold text-sm">
+          Retry Payment (₹2,450.00) &rarr;
+        </button>
+        <button class="btn btn-outline w-full py-2.5 text-xs">
+          Return to Booking
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let reducedMotion = false;
+  function toggleReducedMotion() {
+    reducedMotion = !reducedMotion;
+    const body = document.body;
+    const label = document.getElementById('motion-label');
+    const dot = document.getElementById('motion-dot');
+    
+    if (reducedMotion) {
+      body.classList.add('reduce-motion-forced');
+      label.textContent = 'Motion: Reduced (Accessibility)';
+      dot.classList.remove('bg-[#dfc38f]');
+      dot.classList.add('bg-[#b4cdb8]');
+      
+      const style = document.createElement('style');
+      style.id = 'forced-reduced-motion';
+      style.innerHTML = `
+        .pv-proc-frame, .pv-proc-pulse, .pv-proc-scanline, .pv-proc-glyph,
+        .pv-success-entrance, .pv-success-check, .pv-success-sparkle,
+        .pv-failure-entrance, .pv-failure-cross {
+          animation: none !important;
+          stroke-dashoffset: 0 !important;
+          opacity: 1 !important;
+          transform: none !important;
+          filter: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    } else {
+      body.classList.remove('reduce-motion-forced');
+      label.textContent = 'Motion: Full (600-900ms)';
+      dot.classList.add('bg-[#dfc38f]');
+      dot.classList.remove('bg-[#b4cdb8]');
+      const existing = document.getElementById('forced-reduced-motion');
+      if (existing) existing.remove();
+    }
+  }
+</script>
+{% endblock %}

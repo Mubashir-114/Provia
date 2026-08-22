@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Provider Bookings — Provia Provider{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  {% include "components/page_header.html" with title="Customer Bookings" subtitle="Manage customer appointment requests and update service fulfillment status." back_url_name="dashboard:provider" back_label="Back to Dashboard" %}
+
+  <!-- Status Filter Tabs -->
+  <div class="flex flex-wrap gap-2 border-b border-[#343533] pb-4 mb-8">
+    <a
+      href="{% url 'bookings:provider_bookings' %}"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if not current_status %}bg-[#b4cdb8] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      All Bookings
+    </a>
+    <a
+      href="{% url 'bookings:provider_bookings' %}?status=pending"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'pending' %}bg-[#dfc38f] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Pending
+    </a>
+    <a
+      href="{% url 'bookings:provider_bookings' %}?status=confirmed"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'confirmed' %}bg-[#b4cdb8] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Confirmed
+    </a>
+    <a
+      href="{% url 'bookings:provider_bookings' %}?status=completed"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'completed' %}bg-[#9bbad2] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Completed
+    </a>
+    <a
+      href="{% url 'bookings:provider_bookings' %}?status=cancelled"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'cancelled' %}bg-red-500 text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Cancelled
+    </a>
+  </div>
+
+  <div class="mt-8">
+    {% if bookings %}
+      <div class="overflow-hidden rounded-xl border border-[#343533] bg-[#1b1c1a]">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-[#121412] text-xs font-mono uppercase tracking-wider text-[#6f756f] border-b border-[#343533]">
+              <tr>
+                <th class="px-6 py-4">Customer</th>
+                <th class="px-6 py-4">Service</th>
+                <th class="px-6 py-4">Date &amp; Time</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#262825]">
+              {% for booking in bookings %}
+                <tr class="hover:bg-[#1f201e] transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="font-bold text-[#e9ebe7]">
+                      {{ booking.customer.get_full_name|default:booking.customer.username }}
+                    </div>
+                    <div class="text-xs text-[#a4aba4]">
+                      {{ booking.customer.email }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="font-medium text-[#e9ebe7]">
+                      {{ booking.service.title }}
+                    </div>
+                    <div class="text-xs text-[#a4aba4]">
+                      {{ booking.service.category.name }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-mono text-xs font-medium text-[#e9ebe7]">
+                      {{ booking.booking_date|date:"d M Y" }}
+                    </div>
+                    <div class="font-mono text-xs text-[#b4cdb8]">
+                      {{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {% include "components/status_badge.html" with status=booking.status %}
+                  </td>
+                  <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <a
+                      href="{% url 'bookings:provider_detail' booking.pk %}"
+                      class="btn btn-outline py-1.5 px-3 text-xs"
+                    >
+                      Manage &rarr;
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% include "components/pagination.html" with page_obj=page_obj %}
+      </div>
+    {% else %}
+      {% include "components/empty_state.html" with title="No Customer Bookings" message="You have no customer bookings matching the selected filter." action_url_name="dashboard:provider" action_label="Return to Dashboard" %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

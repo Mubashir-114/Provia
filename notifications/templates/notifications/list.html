@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Center — Provia{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pv-notif-card {
+    border: 1px solid rgba(67, 72, 67, 0.5) !important;
+    border-radius: 0.375rem !important;
+    background-color: rgba(26, 28, 26, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .pv-notif-card-unread {
+    background-color: rgba(30, 32, 30, 0.85) !important;
+    border-color: rgba(180, 205, 184, 0.35) !important;
+  }
+  .pv-notif-card-read {
+    background-color: rgba(26, 28, 26, 0.65) !important;
+    border-color: rgba(52, 55, 51, 0.5) !important;
+  }
+  .pv-notif-card:hover {
+    background-color: rgba(41, 42, 40, 0.9) !important;
+    border-color: rgba(67, 72, 67, 0.8) !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5) !important;
+  }
+  .pv-notif-btn-mark-all {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    border-radius: 0.25rem !important;
+    border: 1px solid rgba(67, 72, 67, 0.6) !important;
+    background-color: rgba(26, 28, 26, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    padding: 0.375rem 0.75rem !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #dfc38f !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease !important;
+    cursor: pointer !important;
+  }
+  .pv-notif-btn-mark-all:hover {
+    background-color: rgba(41, 42, 40, 0.95) !important;
+    border-color: rgba(223, 195, 143, 0.6) !important;
+  }
+  .pv-notif-btn-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+    border-radius: 0.25rem !important;
+    border: 1px solid rgba(67, 72, 67, 0.6) !important;
+    background-color: rgba(26, 28, 26, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    padding: 0.375rem 0.625rem !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #b4cdb8 !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease !important;
+    text-decoration: none !important;
+  }
+  .pv-notif-btn-action:hover {
+    background-color: rgba(41, 42, 40, 0.95) !important;
+    border-color: rgba(180, 205, 184, 0.6) !important;
+  }
+  .pv-notif-btn-ghost {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+    border-radius: 0.25rem !important;
+    padding: 0.375rem 0.625rem !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #c3c8c1 !important;
+    background: transparent !important;
+    border: none !important;
+    transition: color 0.15s ease, background-color 0.15s ease !important;
+    cursor: pointer !important;
+  }
+  .pv-notif-btn-ghost:hover {
+    color: #e2e3df !important;
+    background-color: rgba(41, 42, 40, 0.8) !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <!-- Contextual Back Link & Header -->
+  <div class="mb-6 sm:mb-8 border-b border-[#343733] pb-5 sm:pb-6">
+    <div class="mb-3">
+      {% if request.user.role == 'provider' %}
+        {% include "components/back_button.html" with url_name="dashboard:provider" label="Back to Dashboard" %}
+      {% else %}
+        {% include "components/back_button.html" with url_name="dashboard:customer" label="Back to Dashboard" %}
+      {% endif %}
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <span class="font-mono text-xs font-bold uppercase tracking-wider text-[#b4cdb8]">
+          NOTIFICATION CENTER
+        </span>
+        <h1 class="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#e2e3df] mt-1">
+          Stay updated with your latest booking, payment, and account activities.
+        </h1>
+      </div>
+      <div class="shrink-0">
+        {% if unread_notification_count > 0 %}
+          <form method="post" action="{% url 'notifications:mark_all_as_read' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="pv-notif-btn-mark-all">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Mark all as read
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if page_obj.object_list %}
+    <div class="space-y-2 sm:space-y-3">
+      {% for notification in page_obj %}
+        {% with n_type=notification.notification_type|lower %}
+        <article class="pv-notif-card
+          {% if not notification.is_read %}
+            pv-notif-card-unread
+          {% else %}
+            pv-notif-card-read
+          {% endif %}
+        ">
+          <div class="p-4 sm:p-5">
+            <div class="flex items-start gap-3 sm:gap-4">
+              <!-- Icon -->
+              <div class="shrink-0 mt-0.5">
+                {% if 'booking' in n_type %}
+                  <span class="material-symbols-outlined text-[#b4cdb8] text-xl">calendar_today</span>
+                {% elif 'payment' in n_type %}
+                  <span class="material-symbols-outlined text-[#dfc38f] text-xl">payments</span>
+                {% elif 'review' in n_type %}
+                  <span class="material-symbols-outlined text-[#d0e9d3] text-xl">star_rate</span>
+                {% elif 'message' in n_type %}
+                  <span class="material-symbols-outlined text-[#b4cdb8] text-xl">chat</span>
+                {% else %}
+                  <span class="material-symbols-outlined text-[#c3c8c1] text-xl">info</span>
+                {% endif %}
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <!-- Type + Timestamp -->
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span class="rounded px-2 py-0.5 text-[11px] font-mono font-bold uppercase tracking-wider
+                    {% if 'payment' in n_type %}
+                      text-[#dfc38f] bg-[#dfc38f]/10 border border-[#dfc38f]/20
+                    {% elif 'booking' in n_type %}
+                      text-[#b4cdb8] bg-[#b4cdb8]/10 border border-[#b4cdb8]/20
+                    {% elif 'review' in n_type %}
+                      text-[#d0e9d3] bg-[#d0e9d3]/10 border border-[#d0e9d3]/20
+                    {% else %}
+                      text-[#c3c8c1] bg-[#292a28] border border-[#343733]
+                    {% endif %}
+                  ">
+                    {{ notification.get_notification_type_display }}
+                  </span>
+                  <span class="font-mono text-[11px] text-[#6f756f]">
+                    {{ notification.created_at|date:"d M Y · H:i" }}
+                  </span>
+                </div>
+
+                <!-- Title -->
+                <h2 class="font-display text-base sm:text-lg font-bold tracking-tight
+                  {% if not notification.is_read %}
+                    text-[#e2e3df]
+                  {% else %}
+                    text-[#c3c8c1]
+                  {% endif %}
+                ">
+                  {{ notification.title }}
+                </h2>
+
+                <!-- Description -->
+                <p class="mt-1 text-sm text-[#c3c8c1] leading-relaxed">
+                  {{ notification.message }}
+                </p>
+
+                <!-- Read timestamp -->
+                {% if notification.is_read and notification.read_at %}
+                  <p class="mt-2 font-mono text-[11px] text-[#6f756f]">
+                    Read · {{ notification.read_at|date:"d M Y · H:i" }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- Unread indicator -->
+              {% if not notification.is_read %}
+                <span class="shrink-0 mt-1.5">
+                  <span class="inline-block h-2 w-2 rounded-full bg-[#b4cdb8]"></span>
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-3 pt-3 border-t border-[#343733] flex flex-wrap items-center gap-2">
+              {% if notification.link %}
+                <a href="{{ notification.link }}" class="pv-notif-btn-action">
+                  <span>View Details</span>
+                  <span class="text-[#dfc38f]">&rarr;</span>
+                </a>
+              {% endif %}
+
+              {% if not notification.is_read %}
+                <form method="post" action="{% url 'notifications:mark_as_read' notification.id %}" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="pv-notif-btn-ghost">
+                    Mark as read
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    {% include "components/pagination.html" with page_obj=page_obj %}
+  {% else %}
+    {% include "components/empty_state.html" with badge="ALL CLEAR" title="All Clear" message="You're caught up. No new notifications." %}
+  {% endif %}
+</div>
+{% endblock %}

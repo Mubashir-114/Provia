@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Messages — Provia Chat{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-screen w-screen overflow-hidden bg-[#000000] text-[#DAE2FD] font-sans antialiased select-none">
+    <!-- TopAppBar (Desktop Web) -->
+    <header class="hidden md:flex justify-between items-center px-6 py-3 w-full bg-[#171F33] border-b border-[#3C4A46] h-16 shrink-0 z-30">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'home' %}" class="flex items-center gap-2.5 text-decoration-none">
+                <span class="material-symbols-outlined text-[#57F1DB] font-bold text-2xl" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+                <h1 class="text-xl font-bold text-[#DAE2FD] tracking-tight font-display">Provia</h1>
+            </a>
+        </div>
+
+        <!-- Web Navigation Tabs -->
+        <nav class="flex items-center gap-2">
+            <a href="{% url 'chat:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2D3449] text-[#57F1DB] font-semibold text-sm transition-colors">
+                <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">chat</span>
+                Chat
+            </a>
+            <a href="{% if user.role == 'provider' %}{% url 'dashboard:provider' %}{% else %}{% url 'dashboard:customer' %}{% endif %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors">
+                <span class="material-symbols-outlined text-base">dashboard</span>
+                Dashboard
+            </a>
+            <a href="{% url 'notifications:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors relative">
+                <span class="material-symbols-outlined text-base">notifications</span>
+                Notifications
+                {% if unread_notification_count > 0 %}
+                    <span class="w-2 h-2 rounded-full bg-[#57F1DB]"></span>
+                {% endif %}
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#222A3D] text-[#BACAC5] hover:text-[#DAE2FD] text-sm transition-colors">
+                <span class="material-symbols-outlined text-base">settings</span>
+                Settings
+            </a>
+        </nav>
+
+        <form action="{% url 'accounts:logout' %}" method="post" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="flex items-center gap-1.5 text-xs text-[#BACAC5] hover:text-[#FFB4AB] transition-colors cursor-pointer bg-transparent border-none">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </button>
+        </form>
+    </header>
+
+    <!-- Mobile Top Header -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 bg-[#0F172A] border-b border-[#334155] h-14 shrink-0 z-20">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#57F1DB] text-xl" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+            <h1 class="text-base font-bold text-[#DAE2FD] font-display">Messages</h1>
+        </div>
+        <div class="text-[11px] font-mono text-[#BACAC5]">
+            {{ conversations|length }} Thread{{ conversations|length|pluralize }}
+        </div>
+    </header>
+
+    <!-- Main Content Area - Left Conversation List / Right Placeholder Canvas -->
+    <main class="flex-1 flex overflow-hidden w-full relative">
+        <!-- ============================================================
+             PANE 1: Left / Mobile Conversation List (Width 300px-320px on desktop, 100% on mobile)
+             ============================================================ -->
+        <aside class="flex flex-col w-full md:w-[280px] lg:w-[320px] bg-[#0F172A] border-r border-[#334155] shrink-0 h-full select-text pb-16 md:pb-0">
+            <!-- Search Header -->
+            <div class="p-3.5 border-b border-[#334155]">
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-[#BACAC5]/60 text-lg pointer-events-none">search</span>
+                    <input
+                        type="text"
+                        id="conv-search-input"
+                        class="w-full bg-[#1E293B] border border-[#334155] rounded-xl py-1.5 pl-9 pr-3 text-xs text-[#DAE2FD] focus:outline-none focus:border-[#57F1DB] focus:ring-1 focus:ring-[#57F1DB] transition-all placeholder:text-[#BACAC5]/50"
+                        placeholder="Search conversations..."
+                    />
+                </div>
+            </div>
+
+            <!-- Thread List Items -->
+            <div class="flex-1 overflow-y-auto obsidian-scrollbar divide-y divide-[#334155]/40" id="conv-list-items">
+                {% for conv in conversations %}
+                    <a
+                        href="{% url 'chat:conversation' conv.id %}"
+                        class="flex items-center gap-3 p-3.5 transition-colors border-l-2 border-l-transparent hover:bg-[#1E293B]/60 cursor-pointer"
+                        data-conv-item
+                        data-conv-name="{{ conv.other_party_name|lower }}"
+                        data-conv-service="{{ conv.booking.service.title|lower }}"
+                    >
+                        <div class="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-[#334155] bg-[#171F33] flex items-center justify-center text-[#57F1DB] font-bold text-sm">
+                            {{ conv.other_party_name|slice:":2"|upper }}
+                            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#57F1DB] rounded-full border-2 border-[#0F172A]"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-0.5">
+                                <span class="text-sm font-bold truncate text-[#DAE2FD]">
+                                    {{ conv.other_party_name }}
+                                </span>
+                                {% if conv.latest_message %}
+                                    <span class="text-[10px] font-mono text-[#57F1DB] shrink-0">
+                                        {{ conv.latest_message.created_at|date:"H:i" }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-[11px] text-[#BACAC5]/80 truncate font-mono mb-0.5">
+                                {{ conv.booking.service.title }} &bull; #{{ conv.booking_id }}
+                            </div>
+                            <div class="flex justify-between items-center gap-1.5">
+                                <p class="text-xs {% if conv.unread_count > 0 %}text-[#DAE2FD] font-semibold{% else %}text-[#BACAC5]/70{% endif %} truncate">
+                                    {% if conv.latest_message %}
+                                        {% if conv.latest_message.content|slice:":8" == "[SYSTEM]" %}
+                                            <span class="text-[#57F1DB]">&bull; Service Completed</span>
+                                        {% else %}
+                                            {{ conv.latest_message.content }}
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="italic text-[#BACAC5]/40">No messages yet</span>
+                                    {% endif %}
+                                </p>
+                                {% if conv.unread_count > 0 %}
+                                    <span class="w-2 h-2 rounded-full bg-[#57F1DB] shrink-0"></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="py-16 px-6 text-center text-[#BACAC5]">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#1E293B] border border-[#334155] text-[#57F1DB] mb-3">
+                            <span class="material-symbols-outlined text-2xl">chat_bubble_outline</span>
+                        </div>
+                        <h2 class="text-sm font-bold text-[#DAE2FD]">No Conversations Found</h2>
+                        <p class="mt-1.5 text-xs text-[#BACAC5]/70 leading-relaxed max-w-xs mx-auto">
+                            When you book a service or receive service inquiries, your real-time messenger threads will appear here.
+                        </p>
+                        <div class="mt-6">
+                            <a
+                                href="{% url 'services:public_list' %}"
+                                class="inline-flex items-center gap-1.5 rounded-xl bg-[#57F1DB] px-4 py-2 text-xs font-bold text-[#0F172A] hover:bg-[#3CDDC7] transition shadow-sm"
+                            >
+                                <span>Browse Services</span>
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             PANE 2: Desktop Placeholder Canvas (When no conversation is selected)
+             ============================================================ -->
+        <section class="hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-[#000000] relative">
+            <div class="w-16 h-16 rounded-full bg-[#1E293B] border border-[#334155] flex items-center justify-center text-[#57F1DB] mb-4">
+                <span class="material-symbols-outlined text-3xl">chat</span>
+            </div>
+            <h2 class="text-lg font-bold text-[#DAE2FD]">Select a Conversation</h2>
+            <p class="text-xs text-[#BACAC5] max-w-sm mt-1.5 leading-relaxed">
+                Choose a thread from the sidebar on the left to coordinate service details, schedule confirmation, and chat in real time.
+            </p>
+        </section>
+    </main>
+
+    <!-- ============================================================
+         BOTTOM NAVIGATION BAR (Mobile Only)
+         ============================================================ -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full z-30 flex justify-around items-center h-16 bg-[#0F172A] border-t border-[#334155]">
+        <a href="{% url 'chat:list' %}" class="flex flex-col items-center justify-center text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+            <span class="text-[10px] font-bold mt-0.5">Chat</span>
+        </a>
+        <a href="{% if user.role == 'customer' %}{% url 'dashboard:customer' %}{% else %}{% url 'dashboard:provider' %}{% endif %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px] mt-0.5">Dashboard</span>
+        </a>
+        <a href="{% url 'notifications:list' %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="text-[10px] mt-0.5">Alerts</span>
+            {% if unread_notification_count > 0 %}
+                <span class="absolute top-2 right-6 w-2 h-2 bg-[#57F1DB] rounded-full"></span>
+            {% endif %}
+        </a>
+        <a href="{% url 'accounts:profile' %}" class="flex flex-col items-center justify-center text-[#BACAC5] opacity-70 hover:text-[#57F1DB] transition-all">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="text-[10px] mt-0.5">Settings</span>
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("conv-search-input");
+    const items = document.querySelectorAll("[data-conv-item]");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            items.forEach(function (item) {
+                const name = item.getAttribute("data-conv-name") || "";
+                const service = item.getAttribute("data-conv-service") || "";
+                if (name.includes(query) || service.includes(query)) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

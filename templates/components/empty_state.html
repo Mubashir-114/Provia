@@ -1,0 +1,30 @@
+<div class="my-8 flex flex-col items-center justify-center rounded border border-dashed border-[#434843] bg-[#1a1c1a] p-8 sm:p-12 text-center">
+  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-[#b4cdb8] mb-4">
+    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  </div>
+  <span class="font-mono text-xs font-bold uppercase tracking-widest text-[#dfc38f]">
+    {{ badge|default:"ALL CLEAR" }}
+  </span>
+  <h3 class="mt-1 font-display text-lg font-bold text-[#e2e3df]">
+    {{ title|default:"No Records Found" }}
+  </h3>
+  <p class="mt-1.5 max-w-md mx-auto text-xs sm:text-sm text-[#c3c8c1] leading-relaxed">
+    {{ message|default:"There are no items or active alerts in this section at this time." }}
+  </p>
+
+  {% if action_url_name or action_url %}
+    <div class="mt-6">
+      <a
+        href="{% if action_url %}{{ action_url }}{% elif action_url_args %}{% url action_url_name action_url_args %}{% else %}{% url action_url_name %}{% endif %}"
+        class="btn btn-primary text-xs font-mono uppercase tracking-wider"
+      >
+        <span>{{ action_label|default:"Get Started" }}</span>
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </a>
+    </div>
+  {% endif %}
+</div>

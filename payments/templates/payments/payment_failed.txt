@@ -1,0 +1,20 @@
+Hello {{ customer_name }},
+
+We were unable to complete your payment for {{ service_title }} with {{ provider_name }}.
+
+Your booking remains unaffected and no amount was charged.
+
+Payment details:
+Service:    {{ service_title }}
+Amount:     {{ amount }} {{ currency }}
+Reference:  {{ payment_reference|default:"N/A" }}
+Status:     {{ status_display }}
+Date:       {{ payment_date|date:"F j, Y" }} {{ payment_date|time:"g:i A" }}
+
+Try the payment again:
+{{ checkout_link }}
+
+If this keeps happening, open your Provia account for help.
+
+Regards,
+Provia Team

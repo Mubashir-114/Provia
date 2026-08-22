@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+{% block title %}Provider Operations Dashboard — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <!-- Business Operations Header -->
+  <div class="mb-8 rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-7">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded border border-[#434843] bg-[#0d0f0d] px-2.5 py-0.5 text-xs font-mono font-bold text-[#dfc38f]">
+            <span class="h-1.5 w-1.5 rounded-full bg-[#dfc38f]"></span>
+            SERVICE PROVIDER OPERATIONS
+          </span>
+          {% if provider.city %}
+            <span class="inline-flex items-center gap-1 rounded border border-[#434843] bg-[#0d0f0d] px-2.5 py-0.5 text-xs font-mono text-[#c3c8c1]">
+              {{ provider.city }}{% if provider.state %}, {{ provider.state }}{% endif %}
+            </span>
+          {% endif %}
+          {% if unread_notification_count > 0 %}
+            <a
+              href="{% url 'notifications:list' %}"
+              class="inline-flex items-center gap-1.5 rounded border border-[#dfc38f]/40 bg-[#dfc38f]/10 px-2.5 py-0.5 text-xs font-mono font-bold text-[#dfc38f] transition hover:bg-[#dfc38f]/20"
+            >
+              <span class="h-1.5 w-1.5 rounded-full bg-[#dfc38f] animate-pulse"></span>
+              {{ unread_notification_count }} ALERT{{ unread_notification_count|pluralize:"S" }}
+            </a>
+          {% endif %}
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#e2e3df]">
+          {{ provider.business_name|default:request.user.username }}
+        </h1>
+        <p class="mt-1.5 max-w-2xl text-xs sm:text-sm text-[#c3c8c1] leading-relaxed">
+          Manage your commercial service offerings, confirm customer booking requests, and coordinate weekly calendar availability.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 shrink-0">
+        <a
+          href="{% url 'services:create' %}"
+          class="btn btn-brass px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Create New Service</span>
+        </a>
+        <a
+          href="{% url 'services:availability_list' %}"
+          class="btn btn-outline px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
+        >
+          <span>Availability Schedule</span>
+          <span class="text-[#dfc38f]">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operational Workload KPI Bar (5 Stats) -->
+  <section aria-labelledby="workload-heading" class="mb-8">
+    <h2 id="workload-heading" class="sr-only">Operations Summary</h2>
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <!-- Pending Requests -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 transition hover:border-[#dfc38f]">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1]">Pending</p>
+          {% if pending_bookings > 0 %}
+            <span class="inline-flex h-2 w-2 rounded-full bg-[#dfc38f] animate-pulse"></span>
+          {% endif %}
+        </div>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold {% if pending_bookings > 0 %}text-[#dfc38f]{% else %}text-[#e2e3df]{% endif %}">
+          {{ pending_bookings }}
+        </p>
+        <p class="mt-1 text-[11px] font-mono text-[#6f756f]">Requires confirmation</p>
+      </div>
+
+      <!-- Confirmed Jobs -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 transition hover:border-[#b4cdb8]">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1]">Confirmed</p>
+          {% if confirmed_bookings > 0 %}
+            <span class="h-1.5 w-1.5 rounded-full bg-[#b4cdb8]"></span>
+          {% endif %}
+        </div>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold {% if confirmed_bookings > 0 %}text-[#b4cdb8]{% else %}text-[#e2e3df]{% endif %}">
+          {{ confirmed_bookings }}
+        </p>
+        <p class="mt-1 text-[11px] font-mono text-[#6f756f]">Scheduled in calendar</p>
+      </div>
+
+      <!-- Completed Jobs -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 transition hover:border-[#d0e9d3]">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1]">Completed</p>
+          <span class="font-mono text-[10px] text-[#6f756f]">TOTAL</span>
+        </div>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#e2e3df]">
+          {{ completed_bookings }}
+        </p>
+        <p class="mt-1 text-[11px] font-mono text-[#6f756f]">Successfully fulfilled</p>
+      </div>
+
+      <!-- Active Catalog -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 transition hover:border-[#b4cdb8]">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1]">Services</p>
+          <span class="font-mono text-[10px] text-[#6f756f]">{{ published_services }}/{{ total_services }}</span>
+        </div>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#e2e3df]">
+          {{ published_services }}
+        </p>
+        <p class="mt-1 text-[11px] font-mono text-[#6f756f]">{{ unpublished_services }} unpublished</p>
+      </div>
+
+      <!-- Revenue Metric -->
+      <div class="col-span-2 sm:col-span-1 rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 transition hover:border-[#dfc38f]">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1]">Revenue</p>
+          <span class="font-mono text-[10px] text-[#dfc38f]">INR</span>
+        </div>
+        <p class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#dfc38f]">
+          ₹{{ payment_summary.revenue|default:"0" }}
+        </p>
+        <p class="mt-1 text-[11px] font-mono text-[#6f756f]">{{ payment_summary.successful_payments|default:"0" }} paid jobs</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- High-Priority Action Area: Pending Booking Requests Alert -->
+  {% if pending_bookings > 0 %}
+    <section aria-labelledby="pending-alert-heading" class="mb-8">
+      <div class="rounded border border-[#dfc38f]/40 bg-[#1e201e] p-5 sm:p-6 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-start gap-3.5">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-[#dfc38f]/10 text-[#dfc38f] border border-[#dfc38f]/30">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 id="pending-alert-heading" class="font-display text-base sm:text-lg font-bold text-[#e2e3df]">
+                  {{ pending_bookings }} Booking Request{{ pending_bookings|pluralize }} Pending Review
+                </h2>
+                <span class="rounded bg-[#dfc38f] px-2 py-0.5 font-mono text-[10px] font-bold text-[#0d0f0d]">
+                  ACTION REQUIRED
+                </span>
+              </div>
+              <p class="mt-1 text-xs sm:text-sm text-[#c3c8c1]">
+                Customers have placed service requests awaiting your confirmation or schedule adjustments.
+              </p>
+            </div>
+          </div>
+          <div class="shrink-0">
+            <a
+              href="{% url 'bookings:provider_bookings' %}?status=pending"
+              class="btn btn-brass py-2 px-4 text-xs font-mono uppercase tracking-wider font-bold"
+            >
+              Review Requests &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- Upcoming Schedule & Jobs Section -->
+  <section aria-labelledby="schedule-heading" class="mb-10">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <h2 id="schedule-heading" class="font-display text-lg sm:text-xl font-bold text-[#e2e3df]">
+          Upcoming Schedule &amp; Jobs
+        </h2>
+        {% if upcoming_bookings %}
+          <span class="rounded bg-[#292a28] px-2 py-0.5 font-mono text-xs font-bold text-[#b4cdb8] border border-[#434843]">
+            {{ upcoming_bookings|length }}
+          </span>
+        {% endif %}
+      </div>
+      <a href="{% url 'bookings:provider_bookings' %}" class="text-xs font-mono font-semibold text-[#b4cdb8] hover:underline">
+        View all bookings &rarr;
+      </a>
+    </div>
+
+    {% if upcoming_bookings %}
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for booking in upcoming_bookings %}
+          <div class="rounded border border-[#434843] bg-[#1a1c1a] p-4 sm:p-5 flex flex-col justify-between hover:border-[#b4cdb8] transition">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-3">
+                <span class="rounded border border-[#434843] bg-[#0d0f0d] px-2 py-0.5 text-xs font-mono text-[#c3c8c1]">
+                  {{ booking.service.category.name }}
+                </span>
+                {% include "components/status_badge.html" with status=booking.status %}
+              </div>
+
+              <h3 class="font-display text-base font-bold text-[#e2e3df]">
+                {{ booking.service.title }}
+              </h3>
+
+              <div class="mt-3 space-y-1.5 text-xs font-mono">
+                <div class="flex items-center justify-between text-[#c3c8c1]">
+                  <span class="text-[#6f756f]">Customer:</span>
+                  <span class="font-semibold text-[#e2e3df]">{{ booking.customer.get_full_name|default:booking.customer.username }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[#c3c8c1]">
+                  <span class="text-[#6f756f]">Date:</span>
+                  <span class="text-[#e2e3df]">{{ booking.booking_date|date:"l, d M Y" }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[#c3c8c1]">
+                  <span class="text-[#6f756f]">Slot:</span>
+                  <span class="text-[#dfc38f]">{{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[#c3c8c1]">
+                  <span class="text-[#6f756f]">Fee:</span>
+                  <span class="font-bold text-[#dfc38f]">₹{{ booking.service.price }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-[#343733] flex items-center justify-between">
+              <span class="font-mono text-[11px] text-[#6f756f]">Ref #{{ booking.pk }}</span>
+              <a
+                href="{% url 'bookings:provider_detail' booking.pk %}"
+                class="btn btn-outline py-1 px-2.5 text-xs font-mono font-semibold text-[#b4cdb8] hover:border-[#b4cdb8]"
+              >
+                Manage Job &rarr;
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {% include "components/empty_state.html" with badge="ALL CLEAR" title="No Upcoming Jobs Scheduled" message="Ensure your weekly availability slots are open so customers in your area can discover and book your services." action_url_name="services:availability_list" action_label="Update Availability Slots" %}
+    {% endif %}
+  </section>
+
+  <!-- Two Column Layout: Operations Activity & Service Controls -->
+  <div class="grid gap-8 lg:grid-cols-3">
+    <!-- Left Main Column: Recent Activity & Performance (2 Cols on lg) -->
+    <div class="space-y-8 lg:col-span-2">
+      <!-- Recent Booking Requests -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-5 sm:p-6">
+        <div class="flex items-center justify-between border-b border-[#434843] pb-4 mb-5">
+          <div>
+            <h2 class="font-display text-lg font-bold text-[#e2e3df]">Recent Bookings Log</h2>
+            <p class="text-xs text-[#c3c8c1] mt-0.5">Historical appointments and incoming customer requests</p>
+          </div>
+          <a
+            href="{% url 'bookings:provider_bookings' %}"
+            class="text-xs font-mono font-semibold text-[#b4cdb8] hover:underline"
+          >
+            View all ({{ total_bookings }}) &rarr;
+          </a>
+        </div>
+
+        {% if recent_bookings %}
+          <!-- Desktop Table Layout -->
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-[#0d0f0d] text-[11px] font-mono font-bold uppercase tracking-wider text-[#c3c8c1] border-b border-[#434843]">
+                <tr>
+                  <th class="px-3.5 py-2.5">Customer</th>
+                  <th class="px-3.5 py-2.5">Service</th>
+                  <th class="px-3.5 py-2.5">Schedule</th>
+                  <th class="px-3.5 py-2.5">Status</th>
+                  <th class="px-3.5 py-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#343733]">
+                {% for booking in recent_bookings %}
+                  <tr class="hover:bg-[#292a28]/60 transition">
+                    <td class="px-3.5 py-3">
+                      <div class="font-semibold text-xs text-[#e2e3df]">
+                        {{ booking.customer.get_full_name|default:booking.customer.username }}
+                      </div>
+                      <div class="font-mono text-[11px] text-[#6f756f]">{{ booking.customer.email }}</div>
+                    </td>
+                    <td class="px-3.5 py-3">
+                      <div class="text-xs font-medium text-[#e2e3df]">{{ booking.service.title }}</div>
+                      <div class="text-[11px] font-mono text-[#c3c8c1]">{{ booking.service.category.name }}</div>
+                    </td>
+                    <td class="px-3.5 py-3 font-mono text-xs text-[#e2e3df] whitespace-nowrap">
+                      <div>{{ booking.booking_date|date:"d M Y" }}</div>
+                      <div class="text-[11px] text-[#6f756f]">{{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}</div>
+                    </td>
+                    <td class="px-3.5 py-3 whitespace-nowrap">
+                      {% include "components/status_badge.html" with status=booking.status %}
+                    </td>
+                    <td class="px-3.5 py-3 text-right whitespace-nowrap font-mono text-xs">
+                      <a
+                        href="{% url 'bookings:provider_detail' booking.pk %}"
+                        class="text-[#b4cdb8] hover:underline font-semibold"
+                      >
+                        Manage &rarr;
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Cards Layout -->
+          <div class="sm:hidden space-y-3">
+            {% for booking in recent_bookings %}
+              <div class="rounded border border-[#343733] bg-[#0d0f0d] p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="font-semibold text-sm text-[#e2e3df]">
+                      {{ booking.customer.get_full_name|default:booking.customer.username }}
+                    </h4>
+                    <p class="text-xs text-[#c3c8c1] mt-0.5">{{ booking.service.title }}</p>
+                  </div>
+                  {% include "components/status_badge.html" with status=booking.status %}
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs text-[#c3c8c1] border-t border-[#343733] pt-2 font-mono">
+                  <span>{{ booking.booking_date|date:"d M Y" }} &bull; {{ booking.start_time|time:"H:i" }}</span>
+                  <span class="font-bold text-[#dfc38f]">₹{{ booking.service.price }}</span>
+                </div>
+                <div class="mt-3 text-right">
+                  <a
+                    href="{% url 'bookings:provider_detail' booking.pk %}"
+                    class="btn btn-outline w-full text-center text-xs font-mono font-semibold py-1.5"
+                  >
+                    Manage Job &rarr;
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="text-center py-8">
+            <p class="text-xs sm:text-sm text-[#c3c8c1]">No booking history recorded yet.</p>
+            <a href="{% url 'services:create' %}" class="mt-2 inline-block text-xs font-mono font-semibold text-[#dfc38f] hover:underline">
+              Create your first service offering &rarr;
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Business Performance & Quality Metrics -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-5 sm:p-6">
+        <div class="border-b border-[#434843] pb-4 mb-5">
+          <h2 class="font-display text-lg font-bold text-[#e2e3df]">Performance &amp; Feedback</h2>
+          <p class="text-xs text-[#c3c8c1] mt-0.5">Aggregated feedback and fulfillment metrics across all completed jobs</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+          <div class="rounded border border-[#343733] bg-[#0d0f0d] p-4">
+            <p class="text-[10px] uppercase text-[#6f756f]">Rating</p>
+            <p class="mt-2 text-2xl font-bold text-[#dfc38f]">
+              {% if review_summary.average_rating %}
+                {{ review_summary.average_rating|floatformat:1 }} <span class="text-xs text-[#c3c8c1]">/ 5</span>
+              {% else %}
+                <span class="text-xs text-[#6f756f]">No ratings</span>
+              {% endif %}
+            </p>
+            <p class="mt-1 text-[11px] text-[#6f756f]">{{ review_summary.review_count }} review{{ review_summary.review_count|pluralize }}</p>
+          </div>
+
+          <div class="rounded border border-[#343733] bg-[#0d0f0d] p-4">
+            <p class="text-[10px] uppercase text-[#6f756f]">Completed</p>
+            <p class="mt-2 text-2xl font-bold text-[#b4cdb8]">
+              {{ completed_bookings }}
+            </p>
+            <p class="mt-1 text-[11px] text-[#6f756f]">Fulfilled orders</p>
+          </div>
+
+          <div class="rounded border border-[#343733] bg-[#0d0f0d] p-4">
+            <p class="text-[10px] uppercase text-[#6f756f]">Cancelled</p>
+            <p class="mt-2 text-2xl font-bold text-[#e2e3df]">
+              {{ cancelled_bookings }}
+            </p>
+            <p class="mt-1 text-[11px] text-[#6f756f]">Cancelled orders</p>
+          </div>
+
+          <div class="rounded border border-[#343733] bg-[#0d0f0d] p-4">
+            <p class="text-[10px] uppercase text-[#6f756f]">Total Bookings</p>
+            <p class="mt-2 text-2xl font-bold text-[#e2e3df]">
+              {{ total_bookings }}
+            </p>
+            <p class="mt-1 text-[11px] text-[#6f756f]">Handled requests</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar Column: Operations Console (1 Col on lg) -->
+    <div class="space-y-6">
+      <!-- Recent Messages Widget -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-5 sm:p-6">
+        <div class="flex items-center justify-between border-b border-[#434843] pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <h2 class="font-display text-base font-bold text-[#e2e3df]">
+              Recent Messages
+            </h2>
+            {% if recent_conversations %}
+              <span class="rounded bg-[#292a28] px-1.5 py-0.5 font-mono text-[11px] text-[#b4cdb8] border border-[#434843]">
+                {{ recent_conversations|length }}
+              </span>
+            {% endif %}
+          </div>
+          <a
+            href="{% url 'chat:list' %}"
+            class="text-xs font-mono font-semibold text-[#b4cdb8] hover:underline"
+          >
+            All Messages &rarr;
+          </a>
+        </div>
+
+        {% if recent_conversations %}
+          <div class="divide-y divide-[#343733]">
+            {% for conv in recent_conversations %}
+              <div class="py-2.5 first:pt-0 last:pb-0">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-semibold {% if conv.unread_count > 0 %}text-[#e2e3df] font-bold{% else %}text-[#c3c8c1]{% endif %} truncate">
+                        {{ conv.other_name }}
+                      </span>
+                      {% if conv.unread_count > 0 %}
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#b4cdb8] shrink-0" title="Unread message"></span>
+                      {% endif %}
+                    </div>
+                    <p class="font-mono text-[11px] text-[#6f756f] truncate mt-0.5">
+                      {{ conv.service_title }} &bull; #{{ conv.booking_id }}
+                    </p>
+                    <p class="text-xs {% if conv.unread_count > 0 %}text-[#e2e3df] font-medium{% else %}text-[#c3c8c1]{% endif %} truncate mt-1">
+                      {% if conv.latest_message %}
+                        {{ conv.latest_message.content }}
+                      {% else %}
+                        <span class="italic text-[#6f756f]">No messages yet</span>
+                      {% endif %}
+                    </p>
+                  </div>
+                  <div class="flex flex-col items-end shrink-0 gap-1.5 font-mono">
+                    {% if conv.latest_message %}
+                      <span class="text-[10px] text-[#6f756f]">
+                        {{ conv.latest_message.created_at|date:"H:i" }}
+                      </span>
+                    {% endif %}
+                    <a
+                      href="{% url 'chat:conversation' conv.id %}"
+                      class="inline-flex items-center rounded border border-[#434843] bg-[#0d0f0d] px-2 py-0.5 text-[11px] font-medium text-[#b4cdb8] hover:bg-[#292a28] transition"
+                    >
+                      Chat &rarr;
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4">
+            <p class="text-xs text-[#c3c8c1]">No recent customer inquiries.</p>
+            <a href="{% url 'chat:list' %}" class="mt-1.5 inline-block text-xs font-mono font-medium text-[#b4cdb8] hover:underline">
+              View messages inbox &rarr;
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Service & Operations Console -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-5 sm:p-6">
+        <h2 class="font-display text-base font-bold text-[#e2e3df] border-b border-[#434843] pb-3 mb-4">
+          Operations Console
+        </h2>
+        <div class="space-y-2">
+          <a
+            href="{% url 'services:list' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#b4cdb8] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#b4cdb8]">&bull;</span>
+              <div>
+                <span class="font-bold">Service Catalog</span>
+                <span class="text-[#6f756f] text-[10px] ml-1">({{ published_services }} active)</span>
+              </div>
+            </div>
+            <span class="text-[#6f756f] group-hover:text-[#b4cdb8] transition">&rarr;</span>
+          </a>
+
+          <a
+            href="{% url 'services:create' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#dfc38f] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#dfc38f]">&bull;</span>
+              <span>Add New Service</span>
+            </div>
+            <span class="text-[#6f756f] group-hover:text-[#dfc38f] transition">&rarr;</span>
+          </a>
+
+          <a
+            href="{% url 'services:availability_list' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#b4cdb8] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#b4cdb8]">&bull;</span>
+              <span>Availability Schedule</span>
+            </div>
+            <span class="text-[#6f756f] group-hover:text-[#b4cdb8] transition">&rarr;</span>
+          </a>
+
+          <a
+            href="{% url 'bookings:provider_bookings' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#dfc38f] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#dfc38f]">&bull;</span>
+              <span>Customer Bookings</span>
+            </div>
+            <span class="text-[#6f756f] group-hover:text-[#dfc38f] transition">&rarr;</span>
+          </a>
+
+          <a
+            href="{% url 'chat:list' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#b4cdb8] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#b4cdb8]">&bull;</span>
+              <span>Customer Chat Inbox</span>
+            </div>
+            <span class="text-[#6f756f] group-hover:text-[#b4cdb8] transition">&rarr;</span>
+          </a>
+
+          <a
+            href="{% url 'notifications:list' %}"
+            class="flex items-center justify-between rounded border border-[#434843] bg-[#0d0f0d] px-3.5 py-2.5 text-xs font-mono font-medium text-[#e2e3df] hover:border-[#dfc38f] hover:bg-[#1e201e] transition group"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#dfc38f]">&bull;</span>
+              <span>Notifications &amp; Alerts</span>
+            </div>
+            {% if unread_notification_count > 0 %}
+              <span class="badge bg-[#dfc38f] text-[#0d0e0d]">
+                {{ unread_notification_count }}
+              </span>
+            {% else %}
+              <span class="text-[#6f756f] group-hover:text-[#dfc38f] transition">&rarr;</span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
+
+      <!-- Business Profile Details Card -->
+      <div class="rounded border border-[#434843] bg-[#1a1c1a] p-5 sm:p-6">
+        <h2 class="font-display text-base font-bold text-[#e2e3df] mb-3">
+          Business Profile
+        </h2>
+        <div class="space-y-2 text-xs font-mono">
+          <div>
+            <span class="text-[#6f756f]">Business:</span>
+            <span class="font-semibold text-[#e2e3df] ml-1">{{ provider.business_name }}</span>
+          </div>
+          {% if provider.phone %}
+            <div>
+              <span class="text-[#6f756f]">Phone:</span>
+              <span class="text-[#e2e3df] ml-1">{{ provider.phone }}</span>
+            </div>
+          {% endif %}
+          {% if provider.email %}
+            <div>
+              <span class="text-[#6f756f]">Email:</span>
+              <span class="text-[#b4cdb8] ml-1">{{ provider.email }}</span>
+            </div>
+          {% endif %}
+          {% if provider.city %}
+            <div>
+              <span class="text-[#6f756f]">Location:</span>
+              <span class="text-[#e2e3df] ml-1">{{ provider.city }}{% if provider.state %}, {{ provider.state }}{% endif %}</span>
+            </div>
+          {% endif %}
+        </div>
+        <div class="mt-4 pt-3 border-t border-[#434843] flex items-center justify-between">
+          <a
+            href="{% url 'providers:profile' %}"
+            class="text-xs font-mono font-semibold text-[#dfc38f] hover:underline inline-flex items-center gap-1"
+          >
+            Edit business profile &rarr;
+          </a>
+          <a
+            href="{% url 'accounts:profile' %}"
+            class="text-xs font-mono text-[#c3c8c1] hover:text-[#e2e3df] transition"
+          >
+            Personal profile
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

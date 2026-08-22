@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Review for {{ booking.service.title }} — Provia{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
+  <div class="mb-6">
+    {% include "components/back_button.html" with url_name="bookings:detail" url_args=booking.pk label="Back to Booking" %}
+  </div>
+
+  <div class="rounded-xl border border-[#434843] bg-[#1a1c1a] p-6 sm:p-8">
+    <div class="flex flex-col gap-4 border-b border-[#343733] pb-6 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <span class="font-mono text-xs font-bold uppercase tracking-wider text-[#b4cdb8]">
+          CUSTOMER REVIEW
+        </span>
+        <h1 class="mt-1 font-display text-2xl sm:text-3xl font-bold text-[#e2e3df]">
+          Your Verified Review
+        </h1>
+        <p class="mt-1.5 text-xs sm:text-sm text-[#c3c8c1]">
+          {{ booking.service.title }} &bull; {{ booking.provider.business_name|default:booking.provider.user.username }}
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 font-mono text-xs">
+      <div class="rounded-lg border border-[#343733] bg-[#0d0f0d] p-4">
+        <p class="text-[10px] uppercase text-[#6f756f]">Service Offering</p>
+        <p class="mt-1 font-bold text-[#e2e3df] text-sm font-sans">{{ booking.service.title }}</p>
+      </div>
+
+      <div class="rounded-lg border border-[#343733] bg-[#0d0f0d] p-4">
+        <p class="text-[10px] uppercase text-[#6f756f]">Service Provider</p>
+        <p class="mt-1 font-bold text-[#dfc38f] text-sm font-sans">{{ booking.provider.business_name|default:booking.provider.user.username }}</p>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-lg border border-[#343733] bg-[#0d0f0d] p-5">
+      <p class="text-xs font-mono font-bold uppercase tracking-wider text-[#6f756f]">
+        Rating Score
+      </p>
+      <div class="mt-2 flex items-center gap-2 flex-wrap">
+        {% for star in '12345' %}
+        <span class="text-2xl leading-none {% if star|add:0 <= review.rating %}text-[#dfc38f]{% else %}text-[#343733]{% endif %}">
+          ★
+        </span>
+        {% endfor %}
+        <span class="ml-2 font-mono text-sm font-bold text-[#dfc38f]">
+          {{ review.rating }}.0 / 5.0
+        </span>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-lg border border-[#343733] bg-[#0d0f0d] p-5">
+      <p class="text-xs font-mono font-bold uppercase tracking-wider text-[#6f756f]">
+        Review Feedback
+      </p>
+      <div class="mt-3 text-sm text-[#e2e3df] leading-relaxed">
+        {{ review.comment|linebreaks }}
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 font-mono text-xs">
+      <div class="rounded-lg border border-[#343733] bg-[#0d0f0d] p-4">
+        <p class="text-[10px] uppercase text-[#6f756f]">Submitted On</p>
+        <p class="mt-1 font-bold text-[#e2e3df]">{{ review.created_at|date:"d M Y, H:i" }}</p>
+      </div>
+
+      {% if review.updated_at != review.created_at %}
+      <div class="rounded-lg border border-[#343733] bg-[#0d0f0d] p-4">
+        <p class="text-[10px] uppercase text-[#6f756f]">Updated On</p>
+        <p class="mt-1 font-bold text-[#b4cdb8]">{{ review.updated_at|date:"d M Y, H:i" }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-8 flex flex-col gap-3 border-t border-[#343733] pt-6 sm:flex-row sm:items-center sm:justify-end">
+      <a
+        href="{% url 'reviews:edit' booking.pk %}"
+        class="btn btn-outline text-xs font-mono"
+      >
+        Edit Review
+      </a>
+
+      <button
+        type="button"
+        onclick="document.getElementById('delete-review-dialog').showModal()"
+        class="btn btn-danger text-xs font-mono font-bold uppercase tracking-wider cursor-pointer w-full sm:w-auto"
+      >
+        Delete Review
+      </button>
+      {% url 'reviews:delete' booking.pk as delete_review_url %}
+      {% include "components/confirm_dialog.html" with dialog_id="delete-review-dialog" title="Delete Review" message="Are you sure you want to permanently delete your feedback review?" confirm_url=delete_review_url confirm_label="Delete Review" %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

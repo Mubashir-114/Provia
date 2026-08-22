@@ -1,0 +1,28 @@
+<div class="mb-8 border border-[#434843] bg-[#1a1c1a] rounded p-1">
+  <nav class="flex flex-wrap items-center gap-1 sm:gap-1.5" aria-label="Customer Sub Navigation">
+    <a
+      href="{% url 'dashboard:customer' %}"
+      class="rounded px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold transition {% if active_tab == 'dashboard' %}bg-[#292a28] text-[#b4cdb8] border border-[#434843]{% else %}text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df]{% endif %}"
+    >
+      Dashboard
+    </a>
+    <a
+      href="{% url 'services:public_list' %}"
+      class="rounded px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold transition {% if active_tab == 'services' %}bg-[#292a28] text-[#b4cdb8] border border-[#434843]{% else %}text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df]{% endif %}"
+    >
+      Find Services
+    </a>
+    <a
+      href="{% url 'bookings:my_bookings' %}"
+      class="rounded px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold transition {% if active_tab == 'bookings' %}bg-[#292a28] text-[#b4cdb8] border border-[#434843]{% else %}text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df]{% endif %}"
+    >
+      My Bookings
+    </a>
+    <a
+      href="{% url 'accounts:profile' %}"
+      class="rounded px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider font-semibold transition {% if active_tab == 'profile' %}bg-[#292a28] text-[#b4cdb8] border border-[#434843]{% else %}text-[#c3c8c1] hover:bg-[#292a28] hover:text-[#e2e3df]{% endif %}"
+    >
+      Account &amp; Profile
+    </a>
+  </nav>
+</div>

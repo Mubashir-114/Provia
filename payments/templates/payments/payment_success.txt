@@ -1,0 +1,21 @@
+Hello {{ customer_name }},
+
+Your payment for {{ service_title }} with {{ provider_name }} was successful.
+
+Payment details:
+Service:    {{ service_title }}
+Amount:     {{ amount }} {{ currency }}
+Reference:  {{ payment_reference|default:"N/A" }}
+Status:     {{ status_display }}
+Date:       {{ payment_date|date:"F j, Y" }} {{ payment_date|time:"g:i A" }}
+
+View your payment:
+{{ payment_link }}
+
+View your booking:
+{{ booking_link }}
+
+Thank you for your payment.
+
+Regards,
+Provia Team

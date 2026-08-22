@@ -1,0 +1,20 @@
+Hello {{ customer_name }},
+
+We've received your booking request for {{ service_title }} with {{ provider_name }}.
+
+Your request is currently {{ status_display|lower }}. We'll email you as soon as the provider confirms it.
+
+Booking details:
+Service:   {{ service_title }}
+Provider:  {{ provider_name }}
+Date:      {{ booking_date|date:"F j, Y" }}
+Time:      {{ start_time|time:"g:i A" }} - {{ end_time|time:"g:i A" }}
+Status:    {{ status_display }}
+
+Review your booking:
+{{ booking_link }}
+
+If you need to make changes, open your Provia account.
+
+Regards,
+Provia Team

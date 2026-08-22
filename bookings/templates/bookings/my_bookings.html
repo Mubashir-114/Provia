@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — Provia Customer{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  {% include "components/page_header.html" with title="My Service Bookings" subtitle="Track, manage, and review your service appointments and history." action_url_name="services:public_list" action_label="Book New Service" back_url_name="dashboard:customer" back_label="Back to Dashboard" %}
+
+  <!-- Status Filter Tabs -->
+  <div class="flex flex-wrap gap-2 border-b border-[#343533] pb-4 mb-8">
+    <a
+      href="{% url 'bookings:my_bookings' %}"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if not current_status %}bg-[#b4cdb8] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      All Bookings
+    </a>
+    <a
+      href="{% url 'bookings:my_bookings' %}?status=pending"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'pending' %}bg-[#dfc38f] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Pending
+    </a>
+    <a
+      href="{% url 'bookings:my_bookings' %}?status=confirmed"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'confirmed' %}bg-[#b4cdb8] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Confirmed
+    </a>
+    <a
+      href="{% url 'bookings:my_bookings' %}?status=completed"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'completed' %}bg-[#9bbad2] text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Completed
+    </a>
+    <a
+      href="{% url 'bookings:my_bookings' %}?status=cancelled"
+      class="rounded-full px-4 py-1.5 text-xs font-semibold transition {% if current_status == 'cancelled' %}bg-red-500 text-[#0d0e0d] font-bold{% else %}border border-[#343533] bg-[#1b1c1a] text-[#a4aba4] hover:bg-[#292a29] hover:text-[#e9ebe7]{% endif %}"
+    >
+      Cancelled
+    </a>
+  </div>
+
+  <!-- Bookings List -->
+  {% if bookings %}
+    <div class="grid gap-6 md:grid-cols-2">
+      {% for booking in bookings %}
+        <article class="flex flex-col justify-between rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 transition-colors hover:border-[#6f756f]">
+          <div>
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="inline-flex items-center rounded-md bg-[#292a28] border border-[#343533] px-2.5 py-0.5 text-xs font-semibold text-[#b4cdb8]">
+                  {{ booking.service.category.name }}
+                </span>
+                <h2 class="mt-3 font-display text-xl font-bold text-[#e9ebe7]">
+                  {{ booking.service.title }}
+                </h2>
+                <p class="mt-1 text-xs font-semibold text-[#dfc38f]">
+                  {{ booking.provider.business_name|default:booking.provider.user.username }}
+                </p>
+              </div>
+
+              <div>
+                {% include "components/status_badge.html" with status=booking.status %}
+              </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-4 border-t border-[#343533] pt-4 text-xs">
+              <div>
+                <p class="font-mono uppercase tracking-wider text-[#6f756f]">Date</p>
+                <p class="mt-1 font-mono font-bold text-[#e9ebe7]">
+                  {{ booking.booking_date|date:"d M Y" }}
+                </p>
+              </div>
+
+              <div>
+                <p class="font-mono uppercase tracking-wider text-[#6f756f]">Time Slot</p>
+                <p class="mt-1 font-mono font-bold text-[#b4cdb8]">
+                  {{ booking.start_time|time:"H:i" }} – {{ booking.end_time|time:"H:i" }}
+                </p>
+              </div>
+
+              <div>
+                <p class="font-mono uppercase tracking-wider text-[#6f756f]">Amount</p>
+                <p class="mt-1 font-mono text-base font-bold text-[#e9ebe7]">
+                  ₹{{ booking.service.price }}
+                </p>
+              </div>
+
+              {% if booking.service.location %}
+                <div>
+                  <p class="font-mono uppercase tracking-wider text-[#6f756f]">Location</p>
+                  <p class="mt-1 font-medium text-[#c3c8c1] truncate">
+                    {{ booking.service.location.city }}
+                  </p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mt-6 border-t border-[#343533] pt-4 flex items-center justify-between">
+            <span class="font-mono text-xs text-[#6f756f]">#{{ booking.pk }}</span>
+            <a
+              href="{% url 'bookings:detail' booking.pk %}"
+              class="btn btn-outline py-1.5 px-3 text-xs"
+            >
+              <span>View Booking Details</span>
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% include "components/pagination.html" with page_obj=page_obj %}
+  {% else %}
+    {% if current_status == "pending" %}
+      {% include "components/empty_state.html" with title="No Pending Bookings" message="You have no pending bookings." action_url_name="services:public_list" action_label="Explore Services" %}
+    {% elif current_status == "confirmed" %}
+      {% include "components/empty_state.html" with title="No Confirmed Bookings" message="You have no confirmed bookings." action_url_name="services:public_list" action_label="Explore Services" %}
+    {% elif current_status == "completed" %}
+      {% include "components/empty_state.html" with title="No Completed Bookings" message="You have no completed bookings." action_url_name="services:public_list" action_label="Explore Services" %}
+    {% elif current_status == "cancelled" %}
+      {% include "components/empty_state.html" with title="No Cancelled Bookings" message="You have no cancelled bookings." action_url_name="services:public_list" action_label="Explore Services" %}
+    {% else %}
+      {% include "components/empty_state.html" with title="No Bookings Found" message="You haven't booked any services yet." action_url_name="services:public_list" action_label="Explore Services" %}
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

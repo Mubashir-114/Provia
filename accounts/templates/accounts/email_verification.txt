@@ -1,0 +1,11 @@
+Hello {{ user.first_name|default:user.username }},
+
+Welcome to Provia. Please verify your email address to activate your account.
+
+Verify your email:
+{{ verification_url }}
+
+If you did not create this Provia account, you can safely ignore this email.
+
+Regards,
+Provia Team

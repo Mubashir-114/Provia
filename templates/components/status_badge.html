@@ -1,0 +1,24 @@
+{% with s=status|lower %}
+<span class="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-mono font-bold tracking-wider uppercase
+  {% if s == 'pending' or s == 'draft' %}
+    bg-[#dfc38f]/10 text-[#dfc38f] border border-[#dfc38f]/30
+  {% elif s == 'confirmed' or s == 'published' or s == 'active' %}
+    bg-[#b4cdb8]/10 text-[#b4cdb8] border border-[#b4cdb8]/30
+  {% elif s == 'completed' %}
+    bg-[#d0e9d3]/10 text-[#d0e9d3] border border-[#d0e9d3]/30
+  {% elif s == 'cancelled' or s == 'canceled' or s == 'inactive' or s == 'failed' %}
+    bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/30
+  {% else %}
+    bg-[#1a1c1a] text-[#c3c8c1] border border-[#434843]
+  {% endif %}
+">
+  <span class="h-1.5 w-1.5 rounded-full
+    {% if s == 'pending' or s == 'draft' %}bg-[#dfc38f]
+    {% elif s == 'confirmed' or s == 'published' or s == 'active' %}bg-[#b4cdb8]
+    {% elif s == 'completed' %}bg-[#d0e9d3]
+    {% elif s == 'cancelled' or s == 'canceled' or s == 'inactive' or s == 'failed' %}bg-[#ffb4ab]
+    {% else %}bg-[#6f756f]{% endif %}
+  "></span>
+  <span>{{ status }}</span>
+</span>
+{% endwith %}
