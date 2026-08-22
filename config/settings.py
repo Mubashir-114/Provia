@@ -99,23 +99,27 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 ASGI_APPLICATION = "config.asgi.application"
 
+REDIS_URL = env("REDIS_URL", default="")
+
+redis_hosts = [REDIS_URL] if REDIS_URL else [
+    {
+        "host": env(
+            "REDIS_HOST",
+            default="127.0.0.1",
+        ),
+        "port": env.int(
+            "REDIS_PORT",
+            default=6379,
+        ),
+        "socket_timeout": 30,
+    }
+]
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [
-                {
-                    "host": env(
-                        "REDIS_HOST",
-                        default="127.0.0.1",
-                    ),
-                    "port": env.int(
-                        "REDIS_PORT",
-                        default=6379,
-                    ),
-                    "socket_timeout": 30,
-                }
-            ],
+            "hosts": redis_hosts,
         },
     },
 }
@@ -134,6 +138,7 @@ DATABASES = {
         "PORT": env("DB_PORT"),
         "OPTIONS": {
             "charset": "utf8mb4",
+            "ssl_mode": "REQUIRED",
         },
     }
 }
