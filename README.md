@@ -1,349 +1,266 @@
 <!-- HEADER BANNER -->
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:1e293b&height=140&section=header&text=&fontSize=30" width="100%" alt="Header Banner" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:1e293b&height=160&section=header&text=PROVIA&fontSize=50&fontColor=38BDF8&desc=On-Demand%20Service%20Marketplace%20%26%20Real-Time%20Booking%20Platform&descSize=18&descAlignY=75" width="100%" alt="Provia Banner" />
 </p>
 
-<!-- HERO SECTION -->
 <div align="center">
 
-# HELLO, I'M A FULL-STACK DEVELOPER 👋
-### **Software Engineer • Backend & Systems Focus**
-
-<a href="https://github.com/DenverCoder1/readme-typing-svg">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=38BDF8&center=true&vCenter=true&width=600&lines=Building+production-minded+Django+applications;Implementing+real-time+ASGI+%26+WebSocket+architectures;Developing+full-stack+service+marketplace+platforms;Exploring+scalable+database+design+%26+modern+UIs" alt="Typing Animation" />
-</a>
-
-<br/>
-
-[![Status](https://img.shields.io/badge/Status-Building%20Completes%20Systems-0ea5e9?style=flat-square)](#currently-building)
-[![Stack](https://img.shields.io/badge/Core-Django%20%7C%20MySQL%20%7C%20Tailwind-38bdf8?style=flat-square)](#tech-stack)
+[![Django](https://img.shields.io/badge/Django-5.0+-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![WebSockets](https://img.shields.io/badge/WebSockets-Daphne%20%2F%20Channels-0284c7?style=for-the-badge&logo=socketdotio&logoColor=white)]()
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0+-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Status](https://img.shields.io/badge/Status-Active_Development-10B981?style=for-the-badge)]()
 
 </div>
 
 ---
 
-## 💡 About Me
+## 📌 Overview
 
-I am a **Software Engineer** specializing in full-stack web applications with a strong focus on backend architecture, database design, and real-time systems. My primary workflow centers on building complete, end-to-end systems using **Python, Django, MySQL, Node.js, and modern CSS/Tailwind frontend interfaces**.
+**Provia** is a production-minded, full-stack on-demand service marketplace designed to connect customers with verified service providers across multiple categories (home repairs, cleaning, electrical, plumbing, and professional consulting). 
 
-- 🔭 **Core Focus:** Architecting robust web platforms with Django, Daphne/ASGI, Channels, and relational databases.
-- ⚡ **Engineering Philosophy:** I learn by building complete, production-grade applications from schema design to user interfaces.
-- 🛠️ **Current Endeavors:** Deep-diving into real-time WebSockets, asynchronous task queues, modular service layers, and clean UI engineering.
+Built with **Django**, **Daphne/ASGI**, **Django Channels**, **MySQL**, and **Tailwind CSS**, Provia provides a seamless booking lifecycle, real-time customer-provider messaging, automated scheduling, and multi-role dashboards.
 
 ---
 
-## ⚡ Currently Building
+## ✨ Key Features
 
-<table width="100%">
-<tr>
-<td style="padding: 16px;">
+### 🔐 1. Multi-Role Authentication & Security
+- **Custom User Roles:** Dedicated capabilities for **Customers**, **Providers**, and **Administrators**.
+- **Email Verification & Reset:** Secure registration flows with email verification tokens and password reset confirmation.
+- **Role-Based Access Control:** Custom decorators (`@customer_required`, `@provider_required`) guarding view endpoints.
 
-### 🚀 **Provia — Full-Stack Service Marketplace Platform**
-**Status:** `In development` · **Category:** `Major Project`
+### 🛠️ 2. Service Catalog & Discovery
+- **Categorized Services:** Browse services by category, pricing model (flat rate vs. hourly), and availability.
+- **Geospatial & Location Search:** Filter services by coverage location and active provider regions.
+- **Detailed Provider Profiles:** View provider bios, ratings, review history, and service portfolios.
 
-Provia is an on-demand service marketplace connecting customers with verified service providers. It features complete booking workflows, state transition validation, real-time WebSocket chat, interactive reviews, automated notifications, and payment processing.
+### 📅 3. Stateful Booking Engine
+- **Transactional State Machine:** Manages booking transitions through defined states:  
+  `Pending` ➔ `Confirmed` ➔ `Completed` / `Cancelled`
+- **Slot Generation & Availability:** Dynamic time slot availability matching provider working hours.
+- **Price Calculation:** Dynamic total calculation considering service duration, rates, and booking options.
 
-**Technologies in active use:**  
-`Python` · `Django 5` · `Daphne / ASGI` · `Django Channels` · `MySQL` · `Tailwind CSS` · `JavaScript (ES6+)` · `WebSockets` · `SMTP/Email`
+### 💬 4. Real-Time Customer-Provider Chat (WebSockets)
+- **Live ASGI Messaging:** Powered by **Daphne** and **Django Channels** over persistent WebSocket connections.
+- **Conversation Tracking:** One-on-one message history tied directly to customer-provider booking contexts.
+- **Unread Counters & Timestamps:** Real-time updates without page refreshes.
 
-[![Repo](https://img.shields.io/badge/Repository-Provia-0284c7?style=flat-square&logo=github)](https://github.com/your-username/Provia)
-[![Architecture](https://img.shields.io/badge/Architecture-ASGI%20%2B%20WSGI%20Hybrid-38bdf8?style=flat-square)]()
-[![Status](https://img.shields.io/badge/Phase-Phase%2010%20Complete-10b981?style=flat-square)]()
+### 🔔 5. Notifications & Review System
+- **In-App Notification Dispatcher:** Real-time alert feed for booking requests, status changes, and message notifications.
+- **Review Ratings:** Post-service rating and feedback workflow updating aggregate provider score.
 
-</td>
-</tr>
-</table>
+### 🎨 6. Responsive UI & Components
+- **Tailwind CSS Design System:** Modern, accessible visual design with custom UI components (modals, breadcrumbs, status badges, navbar, pagination).
+- **Responsive Dashboards:** Tailored dashboard interfaces for both Customers and Providers.
 
 ---
 
-## 📂 Project Portfolio
-
-### 🐍 Django Projects
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 🛠️ Provia — Service Marketplace
-An end-to-end platform for service discovery, scheduling, real-time customer-provider communication, and automated payment tracking.
-
-**Stack**  
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=django,py,mysql,tailwind,js,html,css" alt="Provia Stack" />
-</a>
-
-**Status:** `In development`
-
-<details>
-<summary><b>Key Features & Accomplishments</b></summary>
-
-- **Multi-Role Authentication:** Custom user models for Customers, Providers, and Admins with email verification & password recovery.
-- **Booking Engine:** Stateful booking lifecycle (Pending → Confirmed → Completed / Cancelled) with transactional database operations.
-- **Real-Time Communication:** Live WebSockets chat powered by Django Channels & Daphne ASGI server.
-- **Service & Availability Management:** Dynamic provider schedules, slot generation, and geospatial service filtering.
-- **Notification & Reviews:** In-app notification dispatcher and post-service review ratings.
-
-</details>
-
-[View Repository →](https://github.com/your-username/Provia)
-
-</td>
-<td width="50%" valign="top">
-
-**Architecture Snippet**
+## 🏗️ System Architecture
 
 ```text
-┌─────────────────────────────────────────┐
-│           Browser / Client UI           │
-└────────────────────┬────────────────────┘
-                     │ (HTTP / WebSockets)
-                     ▼
-┌────────────────────┴────────────────────┐
-│      Daphne ASGI Server / Django        │
-├────────────────────┬────────────────────┤
-│ HTTP View Handlers │ ASGI Channels Chat │
-└─────────┬──────────┴─────────┬──────────┘
-          │                    │
-          ▼                    ▼
-┌──────────────────┐  ┌───────────────────┐
-│ Service Services │  │ MySQL DB Engine   │
-└──────────────────┘  └───────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Client Browser / Frontend                       │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ (HTTP & WebSockets)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                         Daphne ASGI Server                             │
+├───────────────────────────────────┬────────────────────────────────────┤
+│  Standard HTTP Requests (WSGI)    │  Real-Time WebSockets (ASGI)       │
+│  - Authentication & Dashboards    │  - Chat Consumer (chat.consumers)  │
+│  - Booking Engine & Services      │  - Channels Consumer Routing       │
+└─────────────────┬─────────────────┴─────────────────┬──────────────────┘
+                  │                                   │
+                  ▼                                   ▼
+┌──────────────────────────────────┐┌────────────────────────────────────┐
+│      Django Service Layer        ││         Django Channels            │
+│  (accounts, bookings, services,  ││         (In-Memory / Redis)         │
+│   payments, notifications)       │└─────────────────┬──────────────────┘
+└─────────────────┬────────────────┘                  │
+                  │                                   │
+                  └─────────────────┬─────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                           MySQL Database Engine                        │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-</td>
-</tr>
-</table>
+---
 
-<br/>
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 🎓 Kodehax Academy — LMS Platform
-A structured Learning Management System built for managing educational paths, student assessments, role-based dashboards, and interactive learning challenges.
-
-**Stack**  
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=django,py,sqlite,bootstrap,html,css" alt="Kodehax Stack" />
-</a>
-
-**Status:** `Completed`
-
-<details>
-<summary><b>Key Features & Accomplishments</b></summary>
-
-- **Role-Based Portals:** Dedicated views for Instructors, Students, and Administrators.
-- **Assessment Management:** Automated grading workflows, assignment submissions, and progress tracking.
-- **Course Catalog & Chat:** Categorized course modules with built-in student query messaging.
-
-</details>
-
-[View Repository →](https://github.com/your-username/kodehax-lms)
-
-</td>
-<td width="50%" valign="top">
-
-**Architecture Snippet**
+## 📂 Project Structure
 
 ```text
-[ Instructor / Student ]
-          │
-          ▼
-   Django MVC Layer
-          │
-    ┌─────┴─────┐
-    ▼           ▼
-  ORM      Auth & Roles
-    │           │
-    └─────┬─────┘
-          ▼
-     SQLite / DB
+Provia/
+├── config/                  # Django project configuration (settings, urls, asgi, wsgi)
+├── accounts/                # User authentication, registration, profiles, email verification
+├── bookings/                # Booking engine, state transitions, slot booking
+├── services/                # Service catalog, categories, location availability
+├── providers/               # Provider profiles, schedules, ratings
+├── chat/                    # Real-time WebSocket chat consumers, routing, history
+├── notifications/           # In-app notification dispatcher & email utilities
+├── payments/                # Checkout workflows & payment records
+├── reviews/                 # Post-service reviews & ratings
+├── dashboard/               # Customer & Provider portal dashboards
+├── analytics/               # System metrics & booking analytics
+├── api/                     # Internal REST/JSON endpoints
+├── static/                  # Compiled Tailwind output (css/output.css) & JavaScript (js/chat.js)
+├── templates/               # Global templates, layout components, navigation partials
+├── src/                     # Tailwind CSS source files (input.css)
+├── manage.py                # Django CLI entrypoint
+├── package.json             # Tailwind CSS & Node build tools
+└── tailwind.config.js       # Tailwind CSS design system configuration
 ```
 
-</td>
-</tr>
-</table>
-
 ---
 
-### 🟢 Node.js & Microservices
+## 🛠️ Tech Stack & Dependencies
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### ⚡ RESTful API & Integration Services
-Lightweight backend services built with Node.js and Express to explore event-driven patterns, JSON web token authentication, and API gateway mechanics.
-
-**Stack**  
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=nodejs,express,js,postman" alt="Node Stack" />
-</a>
-
-**Status:** `Learning project`
-
-<details>
-<summary><b>Concepts & Implementation</b></summary>
-
-- JWT token creation, verification, and HTTP-only cookie storage.
-- Express middleware for request logging, rate limiting, and error handling.
-- Integration testing with Postman collection assertions.
-
-</details>
-
-[View Repository →](https://github.com/your-username/node-api-services)
-
-</td>
-<td width="50%" valign="top">
-
-**Architecture Snippet**
-
-```text
-Client Request
-      │
-      ▼
-Express Router
-      │
-  [Auth Guard]
-      │
- Controller / Service
-```
-
-</td>
-</tr>
-</table>
-
----
-
-### 📱 Mobile & Cross-Platform (Flutter)
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### 📲 Mobile App Prototypes
-Cross-platform mobile interfaces built with Flutter and Dart for exploring modern UI patterns, reactive state management, and REST API consumption.
-
-**Stack**  
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=flutter,dart" alt="Flutter Stack" />
-</a>
-
-**Status:** `Planned` · `Learning project`
-
-<details>
-<summary><b>Focus Areas</b></summary>
-
-- Clean architecture layout using Provider / Bloc for state management.
-- Offline-first caching with local SQLite / Hive storage.
-- Asynchronous API integration with standard JSON serialization.
-
-</details>
-
-[View Repository →](https://github.com/your-username/flutter-mobile-experiments)
-
-</td>
-<td width="50%" valign="top">
-
-**Architecture Snippet**
-
-```text
-Flutter Widgets (UI)
-         │
-    State Layer
-         │
- Repository / HTTP Client
-```
-
-</td>
-</tr>
-</table>
-
----
-
-## 🛠️ Tech Stack
-
-### Languages & Core
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=py,js,html,css,sql,bash" alt="Languages" />
-</a>
-
-### Backend & Frameworks
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=django,nodejs,express" alt="Backend Stack" />
-</a>
-
-### Frontend & Styling
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=tailwind,bootstrap,html,css,js" alt="Frontend Stack" />
-</a>
-
-### Databases & Caching
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=mysql,sqlite,redis" alt="Databases" />
-</a>
-
-### Mobile & Tools
-<a href="https://skillicons.dev">
-  <img src="https://skillicons.dev/icons?i=flutter,dart,git,github,vscode,postman" alt="Tools" />
-</a>
-
----
-
-## 📊 GitHub Stats & Activity
-
-<table align="center" width="100%">
-  <tr>
-    <td width="50%" align="center" valign="top">
-      <img src="https://github-readme-stats.vercel.app/api?username=your-username&show_icons=true&theme=dark&hide_border=true&count_private=true" alt="GitHub Stats" width="100%" />
-    </td>
-    <td width="50%" align="center" valign="top">
-      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=your-username&layout=compact&theme=dark&hide_border=true" alt="Top Languages" width="100%" />
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center" valign="top">
-      <img src="https://github-readme-streak-stats.herokuapp.com/?user=your-username&theme=dark&hide_border=true" alt="GitHub Streak" width="100%" />
-    </td>
-    <td width="50%" align="center" valign="top">
-      <br/>
-      <p align="center">
-        <b>Engineering Discipline</b><br/>
-        Continuous commit history, test-driven iteration, and modular backend development.
-      </p>
-    </td>
-  </tr>
-</table>
-
----
-
-## 🎯 Learning Roadmap
-
-| Target Technology / Domain | Status | Target Application |
+| Layer | Technology | Usage |
 | :--- | :--- | :--- |
-| **Advanced ASGI & WebSockets Scaling** | `Currently learning (tech)` | High-concurrency chat & live notifications in Django |
-| **Redis Caching & Task Queues (Celery)** | `Currently learning (tech)` | Background jobs, email dispatch, and query caching |
-| **Docker & Containerized Deployment** | `Planned` | Containerizing Django + MySQL + Redis services |
-| **Flutter Mobile UI & State Management** | `Learning project` | Cross-platform mobile frontends for web APIs |
+| **Language** | Python 3.10+ | Core application logic |
+| **Framework** | Django 5.0+ | Web framework, ORM, Admin, Authentication |
+| **ASGI / Realtime** | Daphne & Django Channels | Async WebSocket handling for live chat |
+| **Database** | MySQL 8.0+ | Relational database storage |
+| **Frontend** | Tailwind CSS & JavaScript (ES6) | Responsive styling & client DOM/WebSocket handling |
+| **Email** | SMTP / Django Email Backend | Verification and transaction emails |
+| **Build Tools** | Node.js & npm | Tailwind CSS compiler |
 
 ---
 
-## 📫 Connect & Contacts
+## 🚀 Getting Started
 
-<div align="center">
+### Prerequisites
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-username)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/your-profile)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your.email@example.com)
+Ensure you have the following installed on your system:
+- **Python 3.10+**
+- **MySQL 8.0+**
+- **Node.js (v18+) & npm**
+- **Git**
 
-<br/>
+---
 
-![Profile Views](https://komarev.com/ghpvc/?username=your-username&color=0ea5e9&style=flat-square&label=PROFILE+VIEWS)
+### 📥 1. Clone the Repository
 
-</div>
+```bash
+git clone https://github.com/your-username/Provia.git
+cd Provia
+```
 
-<!-- FOOTER BANNER -->
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1e293b,100:0f172a&height=100&section=footer" width="100%" alt="Footer Banner" />
-</p>
+---
+
+### 🐍 2. Set Up Python Virtual Environment
+
+```bash
+# Create virtual environment
+python -m venv env
+
+# Activate virtual environment
+# Windows (PowerShell):
+.\env\Scripts\Activate.ps1
+# Linux/macOS:
+source env/bin/activate
+```
+
+---
+
+### 📦 3. Install Python Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### ⚙️ 4. Configure Environment Variables
+
+Create a `.env` file in the project root directory (refer to `.env.example`):
+
+```ini
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+
+# Database Configuration
+DB_NAME=provia_db
+DB_USER=provia_user
+DB_PASSWORD=your_db_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+
+# Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=Provia <your-email@example.com>
+```
+
+---
+
+### 🗄️ 5. Run Database Migrations
+
+Ensure your MySQL service is running and the database specified in `DB_NAME` exists, then run:
+
+```bash
+python manage.py migrate
+```
+
+---
+
+### 🎨 6. Build Tailwind CSS Assets
+
+```bash
+# Install Node dependencies
+npm install
+
+# Build CSS for production or run watch mode for development
+npm run build
+# Or for watch mode:
+npm run dev
+```
+
+---
+
+### 👤 7. Create Superuser / Dev Users
+
+```bash
+# Create admin superuser
+python manage.py createsuperuser
+
+# (Optional) Seed development users
+python manage.py setup_dev_users
+```
+
+---
+
+### 🖥️ 8. Run the Development Server (Daphne / ASGI)
+
+To support WebSockets for live chat alongside standard HTTP views, run using Daphne:
+
+```bash
+python manage.py runserver
+```
+*(Or invoke Daphne directly for production/ASGI testing)*:
+```bash
+daphne -b 127.0.0.1 -p 8000 config.asgi:application
+```
+
+Visit **http://127.0.0.1:8000/** in your browser.
+
+---
+
+## 🧪 Testing
+
+Run the automated Django unit test suite across all apps:
+
+```bash
+python manage.py test
+```
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
