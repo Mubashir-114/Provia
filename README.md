@@ -1,6 +1,6 @@
 <!-- HEADER BANNER -->
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:1e293b&height=160&section=header&text=PROVIA&fontSize=50&fontColor=38BDF8&desc=On-Demand%20Service%20Marketplace%20%26%20Real-Time%20Booking%20Platform&descSize=18&descAlignY=75" width="100%" alt="Provia Banner" />
+  <img src="static/images/branding/provia-banner.png" width="450" alt="Provia Banner - Book • Connect • Trust" style="border-radius: 20px;" />
 </p>
 
 <div align="center">
