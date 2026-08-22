@@ -23,7 +23,11 @@
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="vertical-align:middle; padding-right:10px;">
-                                    <img src="{% if site_url %}{{ site_url }}{% else %}http://127.0.0.1:8000{% endif %}{% static 'images/branding/provia-brand-icon.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
+                                    {% if site_url %}
+                                    <img src="{{ site_url }}{% static 'images/branding/provia-brand-icon.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
+                                    {% else %}
+                                    <img src="{% static 'images/branding/provia-brand-icon.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
+                                    {% endif %}
                                 </td>
                                 <td style="vertical-align:middle; font-size:14px; letter-spacing:2px; font-weight:bold; color:#dfc38f;">
                                     PROVIA
