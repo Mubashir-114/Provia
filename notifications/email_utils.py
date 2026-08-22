@@ -1,9 +1,11 @@
 import logging
 
 from django.conf import settings
+from django.contrib.staticfiles.finders import find
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import NoReverseMatch, reverse
+from email.mime.image import MIMEImage
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,10 @@ def send_transactional_email(subject, template_prefix, context, to):
     Email delivery failures are logged and never propagated to the caller, so
     the primary business operation (booking/payment state transition) is not
     rolled back merely because SMTP failed.
+    
+    The Provia brand logo is attached as an inline MIME image using Content-ID
+    (cid:provia-brand-icon) so it renders reliably in Gmail and other email clients
+    without requiring access to the Django development server.
     """
     if isinstance(to, str):
         to = [to]
@@ -53,6 +59,9 @@ def send_transactional_email(subject, template_prefix, context, to):
         return
 
     try:
+        if context is None:
+            context = {}
+        context.setdefault("site_url", get_site_url())
         text_body = render_to_string(f"{template_prefix}.txt", context)
         html_body = render_to_string(f"{template_prefix}.html", context)
 
@@ -63,6 +72,20 @@ def send_transactional_email(subject, template_prefix, context, to):
             to=to,
         )
         email.attach_alternative(html_body, "text/html")
+        
+        # Attach Provia logo as inline MIME image with Content-ID
+        logo_path = find("images/branding/provia-brand-icon.png")
+        if logo_path:
+            with open(logo_path, "rb") as f:
+                logo_data = f.read()
+            
+            # Create MIME image part with Content-ID for inline rendering
+            img = MIMEImage(logo_data, "png")
+            img.add_header("Content-ID", "<provia-brand-icon>")
+            img.add_header("Content-Disposition", "inline")
+            # Attach MIME part directly to message
+            email.attach(img)
+        
         email.send(fail_silently=False)
     except Exception:
         logger.exception(

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,9 +20,16 @@
                 <tr>
                     <td style="padding:32px 32px 24px 32px; border-bottom:1px solid #2a2d2a;">
 
-                        <div style="font-size:13px; letter-spacing:2px; font-weight:bold; color:#dfc38f;">
-                            PROVIA
-                        </div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="vertical-align:middle; padding-right:10px;">
+                                    <img src="{% if site_url %}{{ site_url }}{% else %}http://127.0.0.1:8000{% endif %}{% static 'images/branding/provia-brand-icon.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
+                                </td>
+                                <td style="vertical-align:middle; font-size:14px; letter-spacing:2px; font-weight:bold; color:#dfc38f;">
+                                    PROVIA
+                                </td>
+                            </tr>
+                        </table>
 
                         <h1 style="margin:18px 0 0 0; font-size:28px; line-height:1.25; color:#f0f1ec;">
                             Verify your email
