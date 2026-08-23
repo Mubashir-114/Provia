@@ -15,6 +15,7 @@ from accounts.services import EmailVerificationService
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 
 from .forms import RegistrationForm, LoginForm, ResendVerificationForm, ProfileForm
+from providers.models import ProviderProfile
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,9 @@ def login_view(request):
             return redirect(next_url)
 
         if user.role == user.Role.PROVIDER:
-            return redirect("dashboard:provider")
+            if ProviderProfile.objects.filter(user=user).exists():
+                return redirect("dashboard:provider")
+            return redirect("providers:profile")
 
         if user.role == user.Role.ADMIN:
             return redirect("/admin/")

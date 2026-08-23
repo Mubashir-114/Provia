@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from accounts.decorators import role_required
 from accounts.models import User
+from providers.models import ProviderProfile
 from dashboard.services import (
     get_customer_dashboard_data,
     get_provider_dashboard_data,
@@ -39,6 +40,9 @@ def customer_dashboard(request):
 @login_required
 @role_required(User.Role.PROVIDER)
 def provider_dashboard(request):
+    if not ProviderProfile.objects.filter(user=request.user).exists():
+        return redirect("providers:profile")
+
     data = get_provider_dashboard_data(user=request.user)
 
     context = {

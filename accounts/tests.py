@@ -377,6 +377,24 @@ class Phase2AuthenticationTests(TestCase):
         self.assertRedirects(response, reverse("dashboard:provider"))
         self.assertIn("_auth_user_id", self.client.session)
 
+    def test_11c_provider_without_profile_redirects_to_profile_setup(self):
+        provider_user = User.objects.create_user(
+            username="provider_no_profile",
+            email="provider_no_profile@example.com",
+            password="UserPass123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        response = self.client.post(
+            reverse("accounts:login"),
+            {
+                "username": "provider_no_profile",
+                "password": "UserPass123!",
+            },
+        )
+        self.assertRedirects(response, reverse("providers:profile"))
+        self.assertIn("_auth_user_id", self.client.session)
+
     def test_12_invalid_login_rejected(self):
         User.objects.create_user(
             username="valid_user",

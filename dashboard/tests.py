@@ -1108,3 +1108,17 @@ class ProviderDashboardTests(TestCase):
 
         with self.assertNumQueries(9):
             self.client.get(reverse("dashboard:provider"))
+
+    def test_provider_without_profile_redirects_to_profile_setup(self):
+        provider_user = User.objects.create_user(
+            username="dash_provider_no_profile",
+            email="dash_provider_no_profile@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        self.client.force_login(provider_user)
+        response = self.client.get(
+            reverse("dashboard:provider"),
+        )
+        self.assertRedirects(response, reverse("providers:profile"))
