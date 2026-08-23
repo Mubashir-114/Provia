@@ -74,13 +74,13 @@ def send_transactional_email(subject, template_prefix, context, to):
         email.attach_alternative(html_body, "text/html")
         
         # Attach Provia logo as inline MIME image with Content-ID
-        logo_path = find("images/branding/provia-brand-icon.png")
+        logo_path = find("images/branding/provia-banner.jpg")
         if logo_path:
             with open(logo_path, "rb") as f:
                 logo_data = f.read()
             
             # Create MIME image part with Content-ID for inline rendering
-            img = MIMEImage(logo_data, "png")
+            img = MIMEImage(logo_data, "jpeg")
             img.add_header("Content-ID", "<provia-brand-icon>")
             img.add_header("Content-Disposition", "inline")
             # Attach MIME part directly to message

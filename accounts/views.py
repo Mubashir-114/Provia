@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import urlparse
 
 from django.contrib import messages
@@ -15,6 +16,8 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 
 from .forms import RegistrationForm, LoginForm, ResendVerificationForm, ProfileForm
 
+logger = logging.getLogger(__name__)
+
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -26,10 +29,16 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
 
-            EmailVerificationService.send_verification_email(
-                user=user,
-                request=request,
-            )
+            try:
+                EmailVerificationService.send_verification_email(
+                    user=user,
+                    request=request,
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to send verification email for new user %s",
+                    user.pk,
+                )
 
             messages.success(
                 request,
@@ -179,10 +188,16 @@ def resend_verification(request):
             ).first()
 
             if user and not user.is_verified:
-                EmailVerificationService.send_verification_email(
-                    user=user,
-                    request=request,
-                )
+                try:
+                    EmailVerificationService.send_verification_email(
+                        user=user,
+                        request=request,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to resend verification email for user %s",
+                        user.pk,
+                    )
 
             return redirect("accounts:verification_sent")
 
