@@ -2,6 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from . import views
+from .forms import ProviaPasswordResetForm
 
 app_name = "accounts"
 
@@ -12,6 +13,7 @@ urlpatterns = [
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
+            form_class=ProviaPasswordResetForm,
             template_name="accounts/password_reset.html",
             email_template_name="accounts/password_reset_email.txt",
             html_email_template_name="accounts/password_reset_email.html",
