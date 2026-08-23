@@ -2,10 +2,10 @@ import logging
 
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import NoReverseMatch, reverse
-from email.mime.image import MIMEImage
+
+from config.email_provider import send_email
 
 logger = logging.getLogger(__name__)
 
@@ -65,28 +65,28 @@ def send_transactional_email(subject, template_prefix, context, to):
         text_body = render_to_string(f"{template_prefix}.txt", context)
         html_body = render_to_string(f"{template_prefix}.html", context)
 
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=text_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=to,
-        )
-        email.attach_alternative(html_body, "text/html")
-        
-        # Attach Provia logo as inline MIME image with Content-ID
+        attachments = None
         logo_path = find("images/branding/provia-banner.jpg")
         if logo_path:
             with open(logo_path, "rb") as f:
                 logo_data = f.read()
-            
-            # Create MIME image part with Content-ID for inline rendering
-            img = MIMEImage(logo_data, "jpeg")
-            img.add_header("Content-ID", "<provia-brand-icon>")
-            img.add_header("Content-Disposition", "inline")
-            # Attach MIME part directly to message
-            email.attach(img)
-        
-        email.send(fail_silently=False)
+            attachments = [
+                {
+                    "filename": "provia-brand-icon.jpg",
+                    "content": logo_data,
+                    "content_id": "provia-brand-icon",
+                    "disposition": "inline",
+                }
+            ]
+
+        send_email(
+            to=to,
+            subject=subject,
+            text=text_body,
+            html=html_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            attachments=attachments,
+        )
     except Exception:
         logger.exception(
             "Failed to send transactional email '%s' to %s",
