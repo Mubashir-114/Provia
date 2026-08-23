@@ -46,3 +46,7 @@ stitch_extracted/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Certificates / private keys
+*.pem
+*.key
