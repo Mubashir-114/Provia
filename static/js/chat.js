@@ -189,22 +189,31 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+
         updateStatus(reconnectAttempts > 0 ? "reconnecting" : "connecting", reconnectAttempts > 0 ? "Reconnecting..." : "Connecting...");
 
+        let currentSocket;
         try {
-            socket = new WebSocket(wsUrl);
+            currentSocket = new WebSocket(wsUrl);
+            socket = currentSocket;
         } catch (e) {
             updateStatus("error", "Connection error");
             scheduleReconnect();
             return;
         }
 
-        socket.onopen = function () {
+        currentSocket.onopen = function () {
+            if (socket !== currentSocket) return;
             reconnectAttempts = 0;
             updateStatus("connected", "Connected");
         };
 
-        socket.onclose = function (event) {
+        currentSocket.onclose = function (event) {
+            if (socket !== currentSocket) return;
             updateStatus("disconnected", "Reconnecting...");
 
             if (isExplicitlyClosed || event.code === 4001 || event.code === 4003) {
@@ -215,11 +224,13 @@ document.addEventListener("DOMContentLoaded", function () {
             scheduleReconnect();
         };
 
-        socket.onerror = function () {
+        currentSocket.onerror = function () {
+            if (socket !== currentSocket) return;
             updateStatus("error", "Connection error");
         };
 
-        socket.onmessage = function (event) {
+        currentSocket.onmessage = function (event) {
+            if (socket !== currentSocket) return;
             try {
                 const data = JSON.parse(event.data);
                 if (data.type === "message") {

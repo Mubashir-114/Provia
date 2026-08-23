@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 from accounts.models import User
 from bookings.models import Booking
@@ -12,8 +12,20 @@ from config.asgi import application
 import json
 
 
+@override_settings(
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+    CHANNEL_LAYERS={
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    },
+)
 class WebSocketRoutingTests(TestCase):
-
     def test_chat_consumer_rejects_anonymous_connection(self):
         communicator = WebsocketCommunicator(
             application,
@@ -583,6 +595,19 @@ class ChatServiceTests(TestCase):
             )
 
 
+@override_settings(
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+    CHANNEL_LAYERS={
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    },
+)
 class ChatConsumerTests(TransactionTestCase):
 
     def setUp(self):
@@ -865,6 +890,97 @@ class ChatConsumerTests(TransactionTestCase):
             await comm_provider.disconnect()
 
         async_to_sync(test)()
+
+    def test_four_sequential_messages_on_single_websocket_connection(self):
+        async def test():
+            communicator = WebsocketCommunicator(
+                application,
+                f"/ws/chat/{self.conversation.pk}/",
+            )
+            communicator.scope["user"] = self.customer
+            connected, _ = await communicator.connect()
+            self.assertTrue(connected)
+
+            for i in range(1, 5):
+                content = f"Sequential message #{i}"
+                await communicator.send_json_to({"content": content})
+                response = await communicator.receive_json_from()
+                self.assertEqual(response["type"], "message")
+                self.assertEqual(response["content"], content)
+
+            await communicator.disconnect()
+
+        async_to_sync(test)()
+
+    def test_consumer_resilient_to_group_send_failure(self):
+        from unittest.mock import patch
+
+        async def test():
+            communicator = WebsocketCommunicator(
+                application,
+                f"/ws/chat/{self.conversation.pk}/",
+            )
+            communicator.scope["user"] = self.customer
+            connected, _ = await communicator.connect()
+            self.assertTrue(connected)
+
+            with patch(
+                "channels.layers.InMemoryChannelLayer.group_send",
+                side_effect=Exception("Redis connection error"),
+            ):
+                # Send message 1 when group_send fails
+                await communicator.send_json_to({"content": "Resilient message 1"})
+
+                # Assert NO fallback message returned (broadcast failed)
+                self.assertTrue(await communicator.receive_nothing())
+
+                # Verify message 1 is persisted
+                msg1_exists = await sync_to_async(
+                    Message.objects.filter(
+                        conversation=self.conversation,
+                        content="Resilient message 1",
+                    ).exists
+                )()
+                self.assertTrue(msg1_exists)
+
+            # Send message 2 on the SAME connection after group_send recovers
+            await communicator.send_json_to({"content": "Resilient message 2"})
+            res2 = await communicator.receive_json_from()
+            self.assertEqual(res2["type"], "message")
+            self.assertEqual(res2["content"], "Resilient message 2")
+
+            # Verify message 2 is persisted
+            msg2_exists = await sync_to_async(
+                Message.objects.filter(
+                    conversation=self.conversation,
+                    content="Resilient message 2",
+                ).exists
+            )()
+            self.assertTrue(msg2_exists)
+
+            await communicator.disconnect()
+
+        async_to_sync(test)()
+
+    def test_consumer_rejects_connection_on_group_add_failure(self):
+        from unittest.mock import patch
+
+        async def test():
+            communicator = WebsocketCommunicator(
+                application,
+                f"/ws/chat/{self.conversation.pk}/",
+            )
+            communicator.scope["user"] = self.customer
+
+            with patch(
+                "channels.layers.InMemoryChannelLayer.group_add",
+                side_effect=Exception("Redis join error"),
+            ):
+                connected, _ = await communicator.connect()
+                self.assertFalse(connected)
+
+        async_to_sync(test)()
+
 
 
 class ChatViewTests(TestCase):
