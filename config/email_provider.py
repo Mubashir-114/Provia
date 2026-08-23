@@ -1,6 +1,6 @@
 """Email transport abstraction for Provia.
 
-Sends mail through the Resend HTTPS API when ``RESEND_API_KEY`` is configured,
+Sends mail through the Brevo HTTPS API when ``BREVO_API_KEY`` is configured,
 otherwise it falls back to Django's configured ``EMAIL_BACKEND`` (e.g. local
 Gmail SMTP or the ``locmem`` backend used in tests). This keeps the existing
 localhost/Gmail behaviour intact while allowing Render Free (which blocks
@@ -12,6 +12,14 @@ import base64
 import logging
 
 from django.conf import settings
+
+import brevo
+from brevo.core.api_error import ApiError
+from brevo.transactional_emails import (
+    SendTransacEmailRequestAttachmentItem,
+    SendTransacEmailRequestSender,
+    SendTransacEmailRequestToItem,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +47,15 @@ def send_email(
     if not to:
         return False
 
-    api_key = getattr(settings, "RESEND_API_KEY", "") or ""
+    api_key = getattr(settings, "BREVO_API_KEY", "") or ""
     sender = (
         from_email
         or getattr(settings, "DEFAULT_FROM_EMAIL", "")
-        or "onboarding@resend.dev"
+        or "noreply@localhost"
     )
 
     if api_key:
-        return _send_via_resend(api_key, sender, to, subject, text, html, attachments)
+        return _send_via_brevo(api_key, sender, to, subject, text, html, attachments)
     return _send_via_django(sender, to, subject, text, html, attachments)
 
 
@@ -83,50 +91,59 @@ def _send_via_django(sender, to, subject, text, html, attachments):
         return False
 
 
-def _send_via_resend(api_key, sender, to, subject, text, html, attachments):
+def _send_via_brevo(api_key, sender, to, subject, text, html, attachments):
     try:
-        import resend
-    except ImportError:
-        logger.error(
-            "RESEND_API_KEY is configured but the 'resend' package is not installed."
+        client = brevo.Brevo(api_key=api_key)
+
+        sender_name, sender_email = _parse_sender(sender)
+        to_items = [_to_item(addr) for addr in to]
+
+        brevo_attachments = None
+        if attachments:
+            brevo_attachments = [_attachment_item(att) for att in attachments]
+
+        response = client.transactional_emails.send_transac_email(
+            sender=SendTransacEmailRequestSender(
+                email=sender_email,
+                name=sender_name,
+            ),
+            to=to_items,
+            subject=subject,
+            text_content=text,
+            html_content=html,
+            attachment=brevo_attachments,
         )
-        return False
-
-    params = {
-        "from": sender,
-        "to": to,
-        "subject": subject,
-    }
-    if text:
-        params["text"] = text
-    if html:
-        params["html"] = html
-    if attachments:
-        params["attachments"] = [
-            {
-                "filename": att["filename"],
-                "content": base64.b64encode(att["content"]).decode(),
-                **(
-                    {
-                        "content_id": att["content_id"],
-                        "disposition": att.get("disposition", "inline"),
-                    }
-                    if att.get("content_id")
-                    else {}
-                ),
-            }
-            for att in attachments
-        ]
-
-    try:
-        resend.api_key = api_key
-        response = resend.Emails.send(params)
-        if isinstance(response, dict):
-            message_id = response.get("id")
-        else:
-            message_id = getattr(response, "id", None)
-        logger.info("Email sent via Resend (id=%s) to %s", message_id, to)
+        message_id = getattr(response, "message_id", None)
+        logger.info("Email sent via Brevo (id=%s) to %s", message_id, to)
         return True
-    except Exception:
-        logger.exception("Failed to send email via Resend to %s", to)
+    except ApiError:
+        logger.exception("Failed to send email via Brevo to %s", to)
         return False
+    except Exception:
+        logger.exception("Failed to send email via Brevo to %s", to)
+        return False
+
+
+def _parse_sender(sender):
+    if "<" in sender and ">" in sender:
+        name = sender.split("<")[0].strip()
+        email = sender.split("<")[1].split(">")[0].strip()
+        return name, email
+    return "", sender
+
+
+def _to_item(email_addr):
+    if "<" in email_addr and ">" in email_addr:
+        name = email_addr.split("<")[0].strip()
+        email = email_addr.split("<")[1].split(">")[0].strip()
+        return SendTransacEmailRequestToItem(email=email, name=name)
+    return SendTransacEmailRequestToItem(email=email_addr)
+
+
+def _attachment_item(att):
+    filename = att.get("filename", "")
+    base64_content = base64.b64encode(att["content"]).decode("utf-8")
+    return SendTransacEmailRequestAttachmentItem(
+        name=filename,
+        content=base64_content,
+    )

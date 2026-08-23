@@ -228,7 +228,7 @@ DEFAULT_FROM_EMAIL = env(
     default=EMAIL_HOST_USER,
 )
 
-RESEND_API_KEY = env("RESEND_API_KEY", default="")
+BREVO_API_KEY = env("BREVO_API_KEY", default="")
 
 SITE_URL = env(
     "SITE_URL",

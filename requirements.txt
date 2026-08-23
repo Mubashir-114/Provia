@@ -7,4 +7,4 @@ daphne==4.2.3
 redis==8.1.0
 Pillow==12.1.1
 whitenoise
-resend==2.39.0
+brevo-python==5.0.2

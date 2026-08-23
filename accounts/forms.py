@@ -103,7 +103,7 @@ class ProviaPasswordResetForm(PasswordResetForm):
         html_email_template_name=None,
     ):
         """Render the reset email with Django's secure token/URL context, but
-        deliver it through the centralized Resend-aware email provider instead
+        deliver it through the centralized Brevo-aware email provider instead
         of Django's SMTP backend."""
         subject = loader.render_to_string(subject_template_name, context)
         # Email subject *must not* contain newlines.

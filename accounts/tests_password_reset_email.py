@@ -39,7 +39,7 @@ class PasswordResetProviderTests(TestCase):
     def test_reset_payload_does_not_expose_api_key(self):
         self._make_user()
         with mock.patch("accounts.forms.send_email") as spy, override_settings(
-            RESEND_API_KEY="re_secret_123"
+            BREVO_API_KEY="re_secret_123"
         ):
             response = self.client.post(
                 reverse("accounts:password_reset"),
@@ -50,7 +50,8 @@ class PasswordResetProviderTests(TestCase):
         self.assertNotIn("re_secret_123", payload)
 
 
-class PasswordResetResendPathTests(TestCase):
+@override_settings(BREVO_API_KEY="re_test_key_456")
+class PasswordResetBrevoPathTests(TestCase):
     def _make_user(self, username, email):
         return User.objects.create_user(
             username=username,
@@ -59,31 +60,40 @@ class PasswordResetResendPathTests(TestCase):
             is_verified=True,
         )
 
-    def test_reset_uses_resend_when_key_configured(self):
+    def test_reset_uses_brevo_when_key_configured(self):
         self._make_user("reset2", "reset2@example.com")
-        with override_settings(RESEND_API_KEY="re_test_key_456"), mock.patch(
-            "resend.Emails.send", return_value={"id": "email_xyz"}
-        ) as send:
+        with mock.patch("brevo.Brevo") as mock_brevo_cls:
+            mock_client = mock_brevo_cls.return_value
+            mock_response = mock.MagicMock()
+            mock_response.message_id = "email_xyz"
+            mock_client.transactional_emails.send_transac_email.return_value = mock_response
+
             response = self.client.post(
                 reverse("accounts:password_reset"),
                 {"email": "reset2@example.com"},
             )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(send.call_count, 1)
-        params = send.call_args.args[0]
-        self.assertEqual(params["to"], ["reset2@example.com"])
-        self.assertEqual(params["subject"], "Provia password reset")
+        self.assertEqual(
+            mock_client.transactional_emails.send_transac_email.call_count, 1
+        )
+        kwargs = mock_client.transactional_emails.send_transac_email.call_args.kwargs
+        self.assertEqual(kwargs["to"][0].email, "reset2@example.com")
+        self.assertEqual(kwargs["subject"], "Provia password reset")
         self.assertRegex(
-            params["text"],
+            kwargs["text_content"],
             r"/accounts/password-reset/[^/]+/[^/]+/",
         )
-        self.assertNotIn("re_test_key_456", str(params))
+        self.assertNotIn("re_test_key_456", str(kwargs))
 
-    def test_reset_redirects_when_resend_fails(self):
+    def test_reset_redirects_when_brevo_fails(self):
         self._make_user("reset3", "reset3@example.com")
-        with override_settings(RESEND_API_KEY="re_test_key_456"), mock.patch(
-            "resend.Emails.send", side_effect=Exception("network down")
-        ), self.assertLogs("config.email_provider", level="ERROR") as logs:
+        with mock.patch("brevo.Brevo") as mock_brevo_cls, self.assertLogs(
+            "config.email_provider", level="ERROR"
+        ) as logs:
+            mock_client = mock_brevo_cls.return_value
+            mock_client.transactional_emails.send_transac_email.side_effect = Exception(
+                "network down"
+            )
             response = self.client.post(
                 reverse("accounts:password_reset"),
                 {"email": "reset3@example.com"},
