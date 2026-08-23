@@ -14,6 +14,7 @@ BREVO_PATH = "brevo.Brevo"
 class BrevoFallbackTests(TestCase):
     """Without BREVO_API_KEY the provider must use Django's mail backend."""
 
+    @override_settings(BREVO_API_KEY="")
     def test_no_key_uses_django_backend(self):
         response = self.client.post(
             reverse("accounts:register"),
@@ -67,6 +68,7 @@ class BrevoProviderTests(TestCase):
         self.assertIn("verify-email", kwargs["html_content"])
         self.assertTrue(kwargs["text_content"])
         self.assertEqual(kwargs["sender"].email, "provia11023012@gmail.com")
+        self.assertEqual(kwargs["sender"].name, "Provia")
         # API key must never be placed in the message payload.
         self.assertNotIn("re_test_key_123", str(kwargs))
 
@@ -94,6 +96,7 @@ class BrevoProviderTests(TestCase):
         kwargs = mock_client.transactional_emails.send_transac_email.call_args.kwargs
         self.assertEqual(kwargs["to"][0].email, "resend2@example.com")
         self.assertEqual(kwargs["sender"].email, "provia11023012@gmail.com")
+        self.assertEqual(kwargs["sender"].name, "Provia")
 
 
 @override_settings(BREVO_API_KEY="re_test_key_123")

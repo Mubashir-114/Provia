@@ -128,8 +128,8 @@ def _parse_sender(sender):
     if "<" in sender and ">" in sender:
         name = sender.split("<")[0].strip()
         email = sender.split("<")[1].split(">")[0].strip()
-        return name, email
-    return "", sender
+        return name or "Provia", email
+    return "Provia", sender
 
 
 def _to_item(email_addr):

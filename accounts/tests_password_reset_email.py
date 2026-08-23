@@ -79,6 +79,8 @@ class PasswordResetBrevoPathTests(TestCase):
         kwargs = mock_client.transactional_emails.send_transac_email.call_args.kwargs
         self.assertEqual(kwargs["to"][0].email, "reset2@example.com")
         self.assertEqual(kwargs["subject"], "Provia password reset")
+        self.assertEqual(kwargs["sender"].email, "provia11023012@gmail.com")
+        self.assertEqual(kwargs["sender"].name, "Provia")
         self.assertRegex(
             kwargs["text_content"],
             r"/accounts/password-reset/[^/]+/[^/]+/",
