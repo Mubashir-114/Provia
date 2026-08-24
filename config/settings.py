@@ -11,8 +11,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+
+import cloudinary
+import cloudinary.api
+import cloudinary.uploader
 import environ
-from pathlib import Path
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,14 +26,18 @@ env = environ.Env(
 
 environ.Env.read_env(BASE_DIR / ".env", overwrite=True)
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+cloudinary.config(
+    cloud_name=env("CLOUDINARY_CLOUD_NAME"),
+    api_key=env("CLOUDINARY_API_KEY"),
+    api_secret=env("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the secret key used in production!
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -51,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # Provia
     "accounts",
     "providers",
@@ -64,7 +73,9 @@ INSTALLED_APPS = [
     "analytics",
     "api",
     "channels",
+    "cloudinary",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -77,7 +88,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 ROOT_URLCONF = "config.urls"
+
 
 TEMPLATES = [
     {
@@ -95,9 +108,13 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 ASGI_APPLICATION = "config.asgi.application"
+
+
+# Channels / Redis
 
 REDIS_URL = env("REDIS_URL", default="")
 
@@ -114,6 +131,7 @@ redis_hosts = [REDIS_URL] if REDIS_URL else [
         "socket_timeout": 30,
     }
 ]
+
 
 CHANNEL_LAYERS = {
     "default": {
@@ -179,56 +197,137 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "/static/"
+
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+
+# Media
+#
+# Cloudinary is used for user/service images.
+# MEDIA_ROOT remains defined for Django compatibility,
+# but CloudinaryField uploads are stored remotely.
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+
+# Custom user model
+
 AUTH_USER_MODEL = "accounts.User"
+
+
+# CSRF
 
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
     default=[],
 )
 
+
+# Cookies
+
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
+
+# Production security
+
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
     USE_X_FORWARDED_HOST = True
-    SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=True)
-    CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=True)
-    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
-    SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
-    SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", default=True)
-    SECURE_CONTENT_TYPE_NOSNIFF = env.bool("SECURE_CONTENT_TYPE_NOSNIFF", default=True)
+
+    SESSION_COOKIE_SECURE = env.bool(
+        "SESSION_COOKIE_SECURE",
+        default=True,
+    )
+
+    CSRF_COOKIE_SECURE = env.bool(
+        "CSRF_COOKIE_SECURE",
+        default=True,
+    )
+
+    SECURE_SSL_REDIRECT = env.bool(
+        "SECURE_SSL_REDIRECT",
+        default=True,
+    )
+
+    SECURE_HSTS_SECONDS = env.int(
+        "SECURE_HSTS_SECONDS",
+        default=31536000,
+    )
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+        default=True,
+    )
+
+    SECURE_HSTS_PRELOAD = env.bool(
+        "SECURE_HSTS_PRELOAD",
+        default=True,
+    )
+
+    SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
+        "SECURE_CONTENT_TYPE_NOSNIFF",
+        default=True,
+    )
+
+
+# Authentication redirects
 
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
+
+# Email
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = env("EMAIL_HOST")
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+
+EMAIL_PORT = env.int(
+    "EMAIL_PORT",
+    default=587,
+)
+
+EMAIL_USE_TLS = env.bool(
+    "EMAIL_USE_TLS",
+    default=True,
+)
+
+EMAIL_USE_SSL = env.bool(
+    "EMAIL_USE_SSL",
+    default=False,
+)
 
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
 
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL",
     default=EMAIL_HOST_USER,
 )
 
-BREVO_API_KEY = env("BREVO_API_KEY", default="")
+
+# Brevo
+
+BREVO_API_KEY = env(
+    "BREVO_API_KEY",
+    default="",
+)
+
+
+# Site
 
 SITE_URL = env(
     "SITE_URL",

@@ -2,6 +2,7 @@
 {% block title %}My Services — Provia Provider{% endblock %}
 
 {% block content %}
+{% load cloudinary %}
 <div class="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
   {% include "components/page_header.html" with title="My Services" subtitle="Manage, edit, publish, or pause your service offerings." action_url_name="services:create" action_label="Add Service" back_url_name="dashboard:provider" back_label="Dashboard" %}
 
@@ -20,6 +21,10 @@
                 {% include "components/status_badge.html" with status="draft" %}
               {% endif %}
             </div>
+
+            {% if service.image %}
+              <img src="{% cloudinary_url service.image width=400 height=300 crop='fill' %}" alt="{{ service.title }}" class="mt-3.5 h-32 w-full rounded-lg object-cover border border-[#343533]">
+            {% endif %}
 
             <h2 class="mt-3.5 font-display text-lg sm:text-xl font-bold text-[#e9ebe7]">
               {{ service.title }}

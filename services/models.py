@@ -4,6 +4,8 @@ from django.db import models
 
 from providers.models import ProviderProfile
 
+from cloudinary.models import CloudinaryField
+
 
 class ServiceCategory(models.Model):
     name = models.CharField(
@@ -76,6 +78,13 @@ class Service(models.Model):
 
     is_published = models.BooleanField(
         default=False,
+    )
+
+    image = CloudinaryField(
+        "service image",
+        folder="provia/services",
+        blank=True,
+        null=True,
     )
 
     created_at = models.DateTimeField(

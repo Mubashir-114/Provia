@@ -135,6 +135,16 @@ class ResendVerificationForm(forms.Form):
 
 
 class ProfileForm(forms.ModelForm):
+    profile_picture = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "w-full rounded-lg border px-4 py-3",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
     class Meta:
         model = User
         fields = (
@@ -142,6 +152,7 @@ class ProfileForm(forms.ModelForm):
             "last_name",
             "email",
             "phone",
+            "profile_picture",
         )
 
         widgets = {
@@ -166,3 +177,11 @@ class ProfileForm(forms.ModelForm):
                 }
             ),
         }
+
+    def clean_profile_picture(self):
+        from config.image_validation import validate_image_file
+
+        picture = self.cleaned_data.get("profile_picture")
+        if picture:
+            validate_image_file(picture)
+        return picture

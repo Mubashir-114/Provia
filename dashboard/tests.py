@@ -148,6 +148,17 @@ class CustomerDashboardTests(TestCase):
         )
         self.assertContains(response, "My Bookings")
 
+    def test_customer_dashboard_renders_profile_picture(self):
+        self.customer.profile_picture = "provia/customers/test_img"
+        self.customer.save()
+
+        self.client.force_login(self.customer)
+        response = self.client.get(reverse("dashboard:customer"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<img src="https://res.cloudinary.com/')
+        self.assertNotContains(response, '<img src="<img')
+
     def test_unauthenticated_cannot_access_customer_dashboard(self):
         response = self.client.get(
             reverse("dashboard:customer"),

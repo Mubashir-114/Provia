@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from cloudinary.models import CloudinaryField
+
 
 class ProviderProfile(models.Model):
     user = models.OneToOneField(
@@ -43,6 +45,13 @@ class ProviderProfile(models.Model):
     postal_code = models.CharField(
         max_length=20,
         blank=True,
+    )
+
+    profile_picture = CloudinaryField(
+        "provider profile picture",
+        folder="provia/providers",
+        blank=True,
+        null=True,
     )
 
     created_at = models.DateTimeField(

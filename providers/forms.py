@@ -2,8 +2,17 @@ from django import forms
 
 from .models import ProviderProfile
 
-
 class ProviderProfileForm(forms.ModelForm):
+    profile_picture = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "w-full rounded-lg border px-4 py-3",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
     class Meta:
         model = ProviderProfile
         fields = (
@@ -15,6 +24,7 @@ class ProviderProfileForm(forms.ModelForm):
             "city",
             "state",
             "postal_code",
+            "profile_picture",
         )
 
         widgets = {
@@ -69,3 +79,11 @@ class ProviderProfileForm(forms.ModelForm):
                 }
             ),
         }
+
+    def clean_profile_picture(self):
+        from config.image_validation import validate_image_file
+
+        picture = self.cleaned_data.get("profile_picture")
+        if picture:
+            validate_image_file(picture)
+        return picture

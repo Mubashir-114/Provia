@@ -6,8 +6,17 @@ from .models import (
     ServiceCategory,
 )
 
-
 class ServiceForm(forms.ModelForm):
+    image = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "w-full rounded-lg border px-4 py-3",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
     class Meta:
         model = Service
 
@@ -17,6 +26,7 @@ class ServiceForm(forms.ModelForm):
             "description",
             "price",
             "duration_minutes",
+            "image",
         )
 
         widgets = {
@@ -61,6 +71,14 @@ class ServiceForm(forms.ModelForm):
         self.fields["category"].queryset = ServiceCategory.objects.filter(
             is_active=True,
         ).order_by("name")
+
+    def clean_image(self):
+        from config.image_validation import validate_image_file
+
+        image = self.cleaned_data.get("image")
+        if image:
+            validate_image_file(image)
+        return image
 
 
 class ProviderAvailabilityForm(forms.ModelForm):

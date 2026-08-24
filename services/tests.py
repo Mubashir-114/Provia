@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from .models import ServiceCategory
 
@@ -806,3 +807,274 @@ class ServicePublishingViewsTests(TestCase):
         self.service.refresh_from_db()
         self.assertTrue(self.service.is_published)
 
+
+class ServiceImageTests(TestCase):
+
+    def setUp(self):
+        from accounts.models import User
+
+        self.provider_user1 = User.objects.create_user(
+            username="svc_provider1",
+            email="svc_provider1@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        self.provider1 = ProviderProfile.objects.create(
+            user=self.provider_user1,
+            business_name="Service Provider One",
+        )
+
+        self.provider_user2 = User.objects.create_user(
+            username="svc_provider2",
+            email="svc_provider2@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        self.provider2 = ProviderProfile.objects.create(
+            user=self.provider_user2,
+            business_name="Service Provider Two",
+        )
+
+        self.customer_user = User.objects.create_user(
+            username="svc_customer",
+            email="svc_customer@example.com",
+            password="StrongPassword123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+
+        self.category = ServiceCategory.objects.create(
+            name="Cleaning",
+            slug="cleaning",
+        )
+
+        self.service = Service.objects.create(
+            provider=self.provider1,
+            category=self.category,
+            title="Standard Service",
+            description="Standard service description.",
+            price=Decimal("500.00"),
+            duration_minutes=60,
+        )
+
+    def _create_test_image(self, fmt="JPEG"):
+        from PIL import Image
+        import io
+
+        image = Image.new("RGB", (100, 100), color="green")
+        image_file = io.BytesIO()
+        image.save(image_file, fmt)
+        image_file.seek(0)
+        return image_file.read(), "image/jpeg" if fmt == "JPEG" else f"image/{fmt.lower()}"
+
+    def _mock_cloudinary_upload(self):
+        from unittest.mock import patch
+
+        return patch("cloudinary.uploader.upload")
+
+    def test_provider_can_upload_service_image(self):
+        self.client.force_login(self.provider_user1)
+
+        image_data, content_type = self._create_test_image()
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "service_test_id",
+                "version": 1234567890,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("services:create"),
+                {
+                    "category": self.category.pk,
+                    "title": "New Service With Image",
+                    "description": "Description with image",
+                    "price": "750.00",
+                    "duration_minutes": "45",
+                    "image": SimpleUploadedFile(
+                        "service.jpg", image_data, content_type=content_type
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("services:list"))
+        created_service = Service.objects.get(title="New Service With Image")
+        self.assertTrue(bool(created_service.image))
+
+    def test_another_provider_cannot_modify_service_image(self):
+        self.client.force_login(self.provider_user2)
+
+        image_data, content_type = self._create_test_image()
+
+        response = self.client.post(
+            reverse("services:update", kwargs={"pk": self.service.pk}),
+            {
+                "category": self.category.pk,
+                "title": "Hacked Title",
+                "description": "Hacked Description",
+                "price": "100.00",
+                "duration_minutes": "30",
+                "image": SimpleUploadedFile(
+                    "hack.jpg", image_data, content_type=content_type
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+        self.service.refresh_from_db()
+        self.assertFalse(bool(self.service.image))
+
+    def test_customer_cannot_upload_or_modify_service_image(self):
+        self.client.force_login(self.customer_user)
+
+        image_data, content_type = self._create_test_image()
+
+        response_create = self.client.post(
+            reverse("services:create"),
+            {
+                "category": self.category.pk,
+                "title": "Customer Service",
+                "description": "Attempted by customer",
+                "price": "100.00",
+                "duration_minutes": "30",
+                "image": SimpleUploadedFile(
+                    "cust.jpg", image_data, content_type=content_type
+                ),
+            },
+        )
+        self.assertEqual(response_create.status_code, 403)
+
+        response_update = self.client.post(
+            reverse("services:update", kwargs={"pk": self.service.pk}),
+            {
+                "category": self.category.pk,
+                "title": "Customer Modify",
+                "description": "Attempted by customer",
+                "price": "100.00",
+                "duration_minutes": "30",
+                "image": SimpleUploadedFile(
+                    "cust.jpg", image_data, content_type=content_type
+                ),
+            },
+        )
+        self.assertEqual(response_update.status_code, 403)
+
+        self.service.refresh_from_db()
+        self.assertFalse(bool(self.service.image))
+
+    def test_unsupported_image_format_rejected(self):
+        self.client.force_login(self.provider_user1)
+
+        response = self.client.post(
+            reverse("services:create"),
+            {
+                "category": self.category.pk,
+                "title": "Invalid Format Service",
+                "description": "Invalid format description",
+                "price": "500.00",
+                "duration_minutes": "60",
+                "image": SimpleUploadedFile(
+                    "test.txt", b"not an image", content_type="text/plain"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("image", response.context["form"].errors)
+
+    def test_image_over_5mb_rejected(self):
+        self.client.force_login(self.provider_user1)
+
+        response = self.client.post(
+            reverse("services:create"),
+            {
+                "category": self.category.pk,
+                "title": "Oversized Image Service",
+                "description": "Oversized image description",
+                "price": "500.00",
+                "duration_minutes": "60",
+                "image": SimpleUploadedFile(
+                    "big.jpg", b"x" * (5 * 1024 * 1024 + 1), content_type="image/jpeg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("image", response.context["form"].errors)
+
+    def test_service_without_image_still_works(self):
+        self.client.force_login(self.provider_user1)
+
+        response = self.client.post(
+            reverse("services:create"),
+            {
+                "category": self.category.pk,
+                "title": "Service Without Image",
+                "description": "No image attached",
+                "price": "400.00",
+                "duration_minutes": "30",
+            },
+        )
+        self.assertRedirects(response, reverse("services:list"))
+        created_service = Service.objects.get(title="Service Without Image")
+        self.assertFalse(bool(created_service.image))
+
+    def test_existing_image_can_be_replaced(self):
+        self.client.force_login(self.provider_user1)
+
+        image_data1, content_type1 = self._create_test_image(fmt="JPEG")
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "service_img_v1",
+                "version": 1234567890,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("services:update", kwargs={"pk": self.service.pk}),
+                {
+                    "category": self.category.pk,
+                    "title": self.service.title,
+                    "description": self.service.description,
+                    "price": str(self.service.price),
+                    "duration_minutes": str(self.service.duration_minutes),
+                    "image": SimpleUploadedFile(
+                        "img1.jpg", image_data1, content_type=content_type1
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("services:list"))
+        self.service.refresh_from_db()
+        self.assertTrue(bool(self.service.image))
+
+        image_data2, content_type2 = self._create_test_image(fmt="PNG")
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "service_img_v2",
+                "version": 1234567891,
+                "format": "png",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("services:update", kwargs={"pk": self.service.pk}),
+                {
+                    "category": self.category.pk,
+                    "title": self.service.title,
+                    "description": self.service.description,
+                    "price": str(self.service.price),
+                    "duration_minutes": str(self.service.duration_minutes),
+                    "image": SimpleUploadedFile(
+                        "img2.png", image_data2, content_type="image/png"
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("services:list"))
+        self.service.refresh_from_db()
+        self.assertTrue(bool(self.service.image))

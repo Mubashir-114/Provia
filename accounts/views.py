@@ -219,6 +219,7 @@ def profile_view(request):
     if request.method == "POST":
         form = ProfileForm(
             request.POST,
+            request.FILES,
             instance=request.user,
         )
 

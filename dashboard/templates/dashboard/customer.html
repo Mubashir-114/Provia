@@ -2,12 +2,25 @@
 {% block title %}Customer Dashboard — Provia{% endblock %}
 
 {% block content %}
+{% load cloudinary %}
 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
   <!-- Hero Header / Welcome Bar -->
-  <div class="mb-8 rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-7">
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+  <div class="mb-6 rounded border border-[#434843] bg-[#1a1c1a] py-5 sm:py-6 px-6 sm:px-7">
+    <div class="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+      <!-- Left Identity / Profile Area -->
+      <div class="shrink-0">
+        <div class="flex h-32 w-32 md:h-36 md:w-36 shrink-0 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-4xl sm:text-5xl font-bold font-mono text-[#b4cdb8] overflow-hidden">
+          {% if request.user.profile_picture %}
+            <img src="{% cloudinary_url request.user.profile_picture width=400 height=400 crop='fill' gravity='face' %}" alt="{{ request.user.username }}" class="h-full w-full object-cover">
+          {% else %}
+            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Content Area -->
+      <div class="flex-1 min-w-0 space-y-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
           <span class="inline-flex items-center gap-1.5 rounded border border-[#434843] bg-[#0d0f0d] px-2.5 py-0.5 text-xs font-mono font-bold text-[#b4cdb8]">
             <span class="h-1.5 w-1.5 rounded-full bg-[#b4cdb8]"></span>
             CUSTOMER ACCOUNT
@@ -27,31 +40,34 @@
             </a>
           {% endif %}
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#e2e3df]">
-          Welcome back, {{ request.user.first_name|default:request.user.username }}
-        </h1>
-        <p class="mt-1.5 max-w-2xl text-xs sm:text-sm text-[#c3c8c1] leading-relaxed">
-          Manage your active service appointments, track service history, and discover verified local home improvement professionals.
-        </p>
-      </div>
 
-      <div class="flex flex-wrap items-center gap-3 shrink-0">
-        <a
-          href="{% url 'services:public_list' %}"
-          class="btn btn-primary px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
-        >
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <span>Find Services</span>
-        </a>
-        <a
-          href="{% url 'bookings:my_bookings' %}"
-          class="btn btn-outline px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
-        >
-          <span>My Bookings</span>
-          <span class="text-[#dfc38f]">&rarr;</span>
-        </a>
+        <div>
+          <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#e2e3df]">
+            Welcome back, {{ request.user.first_name|default:request.user.username }}
+          </h1>
+          <p class="mt-1.5 max-w-2xl text-xs sm:text-sm text-[#c3c8c1] leading-relaxed">
+            Manage your active service appointments, track service history, and discover verified local home improvement professionals.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-0">
+          <a
+            href="{% url 'services:public_list' %}"
+            class="btn btn-primary px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Find Services</span>
+          </a>
+          <a
+            href="{% url 'bookings:my_bookings' %}"
+            class="btn btn-outline px-5 py-2.5 text-xs font-mono uppercase tracking-wider font-bold"
+          >
+            <span>My Bookings</span>
+            <span class="text-[#dfc38f]">&rarr;</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>

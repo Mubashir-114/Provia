@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from accounts.models import User
 
@@ -165,3 +166,220 @@ class ProviderProfileTests(TestCase):
             profile.user,
             self.provider,
         )
+
+
+class ProviderProfileImageTests(TestCase):
+    def setUp(self):
+        self.provider = User.objects.create_user(
+            username="provider_img_user",
+            email="provider_img@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        self.profile = ProviderProfile.objects.create(
+            user=self.provider,
+            business_name="Test Provider",
+        )
+
+    def _create_test_image(self, fmt="JPEG"):
+        from PIL import Image
+        import io
+
+        image = Image.new("RGB", (100, 100), color="blue")
+        image_file = io.BytesIO()
+        image.save(image_file, fmt)
+        image_file.seek(0)
+        return image_file.read(), "image/jpeg" if fmt == "JPEG" else f"image/{fmt.lower()}"
+
+    def _mock_cloudinary_upload(self):
+        from unittest.mock import patch
+
+        return patch("cloudinary.uploader.upload")
+
+    def test_provider_can_upload_profile_image(self):
+        self.client.force_login(self.provider)
+
+        image_data, content_type = self._create_test_image()
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "provider_test_id",
+                "version": 1234567890,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("providers:profile"),
+                {
+                    "business_name": "Provia Home Services",
+                    "business_description": "",
+                    "phone": "",
+                    "email": "",
+                    "address": "",
+                    "city": "",
+                    "state": "",
+                    "postal_code": "",
+                    "profile_picture": SimpleUploadedFile(
+                        "test.jpg", image_data, content_type=content_type
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("providers:profile"))
+        profile = ProviderProfile.objects.get(user=self.provider)
+        self.assertTrue(bool(profile.profile_picture))
+
+    def test_provider_cannot_modify_another_provider_image(self):
+        other_provider = User.objects.create_user(
+            username="other_provider",
+            email="other@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        ProviderProfile.objects.create(
+            user=other_provider,
+            business_name="Other Business",
+        )
+
+        self.client.force_login(self.provider)
+
+        response = self.client.post(
+            reverse("providers:profile"),
+            {
+                "business_name": "Other Business",
+                "business_description": "",
+                "phone": "",
+                "email": "",
+                "address": "",
+                "city": "",
+                "state": "",
+                "postal_code": "",
+                "profile_picture": SimpleUploadedFile(
+                    "hack.jpg", b"fakeimage", content_type="image/jpeg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        profile = ProviderProfile.objects.get(user=other_provider)
+        self.assertFalse(bool(profile.profile_picture))
+
+    def test_unsupported_image_type_is_rejected(self):
+        self.client.force_login(self.provider)
+
+        response = self.client.post(
+            reverse("providers:profile"),
+            {
+                "business_name": "Provia Home Services",
+                "business_description": "",
+                "phone": "",
+                "email": "",
+                "address": "",
+                "city": "",
+                "state": "",
+                "postal_code": "",
+                "profile_picture": SimpleUploadedFile(
+                    "test.txt", b"not an image", content_type="text/plain"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("profile_picture", response.context["form"].errors)
+
+    def test_oversized_image_is_rejected(self):
+        self.client.force_login(self.provider)
+
+        response = self.client.post(
+            reverse("providers:profile"),
+            {
+                "business_name": "Provia Home Services",
+                "business_description": "",
+                "phone": "",
+                "email": "",
+                "address": "",
+                "city": "",
+                "state": "",
+                "postal_code": "",
+                "profile_picture": SimpleUploadedFile(
+                    "big.jpg", b"x" * (5 * 1024 * 1024 + 1), content_type="image/jpeg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("profile_picture", response.context["form"].errors)
+
+    def test_existing_profile_without_image_continues_to_work(self):
+        self.client.force_login(self.provider)
+
+        response = self.client.get(reverse("providers:profile"))
+        self.assertEqual(response.status_code, 200)
+        profile = ProviderProfile.objects.get(user=self.provider)
+        self.assertFalse(bool(profile.profile_picture))
+
+    def test_image_field_can_be_replaced_safely(self):
+        profile = self.profile
+        self.client.force_login(self.provider)
+
+        image_data, content_type = self._create_test_image()
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "replace_test_id",
+                "version": 1234567890,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("providers:profile"),
+                {
+                    "business_name": "Replace Test",
+                    "business_description": "",
+                    "phone": "",
+                    "email": "",
+                    "address": "",
+                    "city": "",
+                    "state": "",
+                    "postal_code": "",
+                    "profile_picture": SimpleUploadedFile(
+                        "test.jpg", image_data, content_type=content_type
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("providers:profile"))
+        profile.refresh_from_db()
+        self.assertTrue(bool(profile.profile_picture))
+
+        new_image_data, _ = self._create_test_image(fmt="PNG")
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "replace_test_id_v2",
+                "version": 1234567891,
+                "format": "png",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("providers:profile"),
+                {
+                    "business_name": "Replace Test",
+                    "business_description": "",
+                    "phone": "",
+                    "email": "",
+                    "address": "",
+                    "city": "",
+                    "state": "",
+                    "postal_code": "",
+                    "profile_picture": SimpleUploadedFile(
+                        "test.png", new_image_data, content_type="image/png"
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("providers:profile"))
+        profile.refresh_from_db()
+        self.assertTrue(bool(profile.profile_picture))

@@ -10,7 +10,7 @@
   {% include "components/page_header.html" with title=page_title|default:"Manage Service" subtitle="Provide clear details and pricing for this service." %}
 
   <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8">
-    <form method="post" class="provia-form space-y-6">
+    <form method="post" enctype="multipart/form-data" class="provia-form space-y-6">
       {% csrf_token %}
 
       {% if form.non_field_errors %}

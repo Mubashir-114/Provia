@@ -2,6 +2,7 @@
 {% block title %}Account Settings &amp; Profile — Provia{% endblock %}
 
 {% block content %}
+{% load cloudinary %}
 <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
   {% if request.user.role == 'provider' %}
     <div class="mb-6 flex items-center gap-2 border-b border-[#343733] pb-3">
@@ -21,8 +22,12 @@
   <div class="mb-8 rounded border border-[#434843] bg-[#1a1c1a] p-6 sm:p-7">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#434843] pb-6 mb-6">
       <div class="flex items-center gap-4">
-        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-xl font-bold font-mono text-[#b4cdb8]">
-          {{ request.user.first_name|first|default:request.user.username|first|upper }}
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-[#434843] bg-[#0d0f0d] text-xl font-bold font-mono text-[#b4cdb8] overflow-hidden">
+          {% if request.user.profile_picture %}
+            <img src="{% cloudinary_url request.user.profile_picture width=56 height=56 crop='fill' gravity='face' %}" alt="{{ request.user.username }}" class="h-full w-full object-cover">
+          {% else %}
+            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+          {% endif %}
         </div>
         <div>
           <div class="flex items-center gap-2">
@@ -87,7 +92,7 @@
       </p>
     </div>
 
-    <form method="post" class="space-y-6 auth-form provia-form">
+    <form method="post" enctype="multipart/form-data" class="space-y-6 auth-form provia-form">
       {% csrf_token %}
 
       {% if form.non_field_errors %}

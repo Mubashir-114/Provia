@@ -430,6 +430,7 @@
 
 @media (min-width: 768px) {
   .md\:flex { display: flex !important; }
+  .md\:flex-row { flex-direction: row !important; }
   .md\:hidden { display: none !important; }
   .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .md\:col-span-1 { grid-column: span 1 / span 1 !important; }

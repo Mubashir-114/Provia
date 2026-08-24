@@ -8,3 +8,4 @@ redis==8.1.0
 Pillow==12.1.1
 whitenoise
 brevo-python==5.0.2
+cloudinary==1.44.0

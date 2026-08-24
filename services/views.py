@@ -47,7 +47,7 @@ def service_create(request):
     )
 
     if request.method == "POST":
-        form = ServiceForm(request.POST)
+        form = ServiceForm(request.POST, request.FILES)
 
         if form.is_valid():
             service = form.save(commit=False)
@@ -92,6 +92,7 @@ def service_update(request, pk):
     if request.method == "POST":
         form = ServiceForm(
             request.POST,
+            request.FILES,
             instance=service,
         )
 

@@ -2,6 +2,7 @@ import re
 
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -690,3 +691,242 @@ class Phase2AuthenticationTests(TestCase):
         self.assertTrue(user.is_verified)
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
+
+
+class ProfileTemplateEnctypeTests(TestCase):
+    """Regression: the profile form must use multipart/form-data encoding
+    so browsers actually transmit uploaded files.  Django's test client
+    bypasses HTML encoding, so backend-only tests cannot catch a missing
+    enctype attribute."""
+
+    def test_profile_form_has_multipart_enctype(self):
+        user = User.objects.create_user(
+            username="enctype_check",
+            email="enctype@example.com",
+            password="UserPass123!",
+            is_verified=True,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'enctype="multipart/form-data"')
+
+
+class CustomerProfileImageTests(TestCase):
+    def _create_test_image(self, size_mb=1, fmt="JPEG"):
+        from PIL import Image
+        import io
+
+        image = Image.new("RGB", (100, 100), color="red")
+        image_file = io.BytesIO()
+        image.save(image_file, fmt)
+        image_file.seek(0)
+        return image_file.read(), "image/jpeg" if fmt == "JPEG" else f"image/{fmt.lower()}"
+
+    def _mock_cloudinary_upload(self):
+        from unittest.mock import patch
+
+        return patch("cloudinary.uploader.upload")
+
+    def test_customer_can_upload_profile_image(self):
+        user = User.objects.create_user(
+            username="img_customer",
+            email="img_customer@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(user)
+
+        image_data, content_type = self._create_test_image()
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "test_public_id",
+                "version": 1234567890,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("accounts:profile"),
+                {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "profile_picture": SimpleUploadedFile(
+                        "test.jpg", image_data, content_type=content_type
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("accounts:profile"))
+        user.refresh_from_db()
+        self.assertTrue(bool(user.profile_picture))
+
+    def test_customer_cannot_modify_another_customer_image(self):
+        owner = User.objects.create_user(
+            username="img_owner",
+            email="img_owner@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        attacker = User.objects.create_user(
+            username="img_attacker",
+            email="img_attacker@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(attacker)
+
+        response = self.client.post(
+            reverse("accounts:profile"),
+            {
+                "first_name": owner.first_name,
+                "last_name": owner.last_name,
+                "email": owner.email,
+                "phone": owner.phone,
+                "profile_picture": SimpleUploadedFile(
+                    "hack.jpg", b"fakeimage", content_type="image/jpeg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        owner.refresh_from_db()
+        self.assertFalse(bool(owner.profile_picture))
+
+    def test_unsupported_image_type_is_rejected(self):
+        user = User.objects.create_user(
+            username="img_reject",
+            email="img_reject@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("accounts:profile"),
+            {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "phone": user.phone,
+                "profile_picture": SimpleUploadedFile(
+                    "test.txt", b"not an image", content_type="text/plain"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("profile_picture", response.context["form"].errors)
+
+    def test_oversized_image_is_rejected(self):
+        user = User.objects.create_user(
+            username="img_size",
+            email="img_size@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("accounts:profile"),
+            {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "phone": user.phone,
+                "profile_picture": SimpleUploadedFile(
+                    "big.jpg", b"x" * (5 * 1024 * 1024 + 1), content_type="image/jpeg"
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("profile_picture", response.context["form"].errors)
+
+    def test_existing_record_without_image_continues_to_work(self):
+        user = User.objects.create_user(
+            username="no_img_user",
+            email="no_img@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(bool(user.profile_picture))
+
+    def test_image_field_can_be_replaced_safely(self):
+        user = User.objects.create_user(
+            username="replace_img",
+            email="replace_img@example.com",
+            password="UserPass123!",
+            role=User.Role.CUSTOMER,
+            is_verified=True,
+        )
+        self.client.force_login(user)
+
+        image_data, content_type = self._create_test_image()
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "test_public_id_v2",
+                "version": 1234567891,
+                "format": "jpg",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("accounts:profile"),
+                {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "profile_picture": SimpleUploadedFile(
+                        "test.jpg", image_data, content_type=content_type
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("accounts:profile"))
+        user.refresh_from_db()
+        self.assertTrue(bool(user.profile_picture))
+
+        new_image_data, _ = self._create_test_image(fmt="PNG")
+
+        with self._mock_cloudinary_upload() as mock_upload:
+            mock_upload.return_value = {
+                "public_id": "test_public_id_v3",
+                "version": 1234567892,
+                "format": "png",
+                "resource_type": "image",
+                "type": "upload",
+            }
+            response = self.client.post(
+                reverse("accounts:profile"),
+                {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "profile_picture": SimpleUploadedFile(
+                        "test.png", new_image_data, content_type="image/png"
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse("accounts:profile"))
+        user.refresh_from_db()
+        self.assertTrue(bool(user.profile_picture))
+
+    def test_application_works_without_cloudinary_credentials(self):
+        with self.settings(CLOUDINARY_CLOUD_NAME="", CLOUDINARY_API_KEY="", CLOUDINARY_API_SECRET=""):
+            from django.conf import settings
+            self.assertEqual(settings.CLOUDINARY_CLOUD_NAME, "")

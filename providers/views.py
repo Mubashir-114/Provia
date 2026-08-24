@@ -17,6 +17,7 @@ def profile_view(request):
     if request.method == "POST":
         form = ProviderProfileForm(
             request.POST,
+            request.FILES,
             instance=profile,
         )
 
