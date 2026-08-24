@@ -287,6 +287,37 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 
+# Cache
+#
+# Lightweight in-memory cache used for password-reset rate limiting.
+# No external infrastructure is required for this feature.
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "provia-password-reset",
+    }
+}
+
+
+# Password reset rate limiting
+#
+# Limits how many password-reset emails a single client/IP can trigger within
+# a rolling window. The check runs *before* any email is sent, and the
+# endpoint always returns the same generic success response so we never
+# reveal whether an email address exists or that a request was rate limited.
+
+PASSWORD_RESET_RATE_LIMIT = env.int(
+    "PASSWORD_RESET_RATE_LIMIT",
+    default=3,
+)
+
+PASSWORD_RESET_RATE_WINDOW = env.int(
+    "PASSWORD_RESET_RATE_WINDOW",
+    default=900,
+)
+
+
 # Email
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

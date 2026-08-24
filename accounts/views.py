@@ -1,13 +1,17 @@
 import logging
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
+from django.contrib.auth.views import PasswordResetView
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode, url_has_allowed_host_and_scheme
 from accounts.services import EmailVerificationService
@@ -18,6 +22,39 @@ from .forms import RegistrationForm, LoginForm, ResendVerificationForm, ProfileF
 from providers.models import ProviderProfile
 
 logger = logging.getLogger(__name__)
+
+
+class RateLimitedPasswordResetView(PasswordResetView):
+    """Password reset view that rate-limits repeated requests per client/IP.
+
+    The rate-limit check runs *before* any email is sent. When the limit is
+    reached, the view still returns the same generic success redirect so the
+    response is identical whether the email exists, does not exist, or the
+    request was rate limited (no user enumeration).
+    """
+
+    def _client_key(self):
+        return f"password-reset:{self.request.META.get('REMOTE_ADDR', 'unknown')}"
+
+    def _is_rate_limited(self):
+        limit = getattr(settings, "PASSWORD_RESET_RATE_LIMIT", 3)
+        window = getattr(settings, "PASSWORD_RESET_RATE_WINDOW", 900)
+        key = self._client_key()
+
+        current = cache.get(key, 0)
+        if current >= limit:
+            return True
+
+        cache.set(key, current + 1, timeout=window)
+        return False
+
+    def form_valid(self, form):
+        if self._is_rate_limited():
+            # Do not send another email, but keep the generic success response
+            # so the endpoint behaves identically for all requests.
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().form_valid(form)
 
 
 def register_view(request):

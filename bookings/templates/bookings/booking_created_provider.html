@@ -2,8 +2,10 @@
 
 {% block title %}New Provia booking request{% endblock %}
 
+{% block preheader %}You received a new booking request for {{ service_title }} from {{ customer_name }}.{% endblock %}
+
 {% block eyebrow %}
-<p style="margin:14px 0 0 0; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#aeb3aa;">
+<p style="margin:20px 0 0 0; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#b4cdb8; text-align:center; font-weight:bold;">
     New Request
 </p>
 {% endblock %}
@@ -11,9 +13,9 @@
 {% block heading %}New booking request{% endblock %}
 
 {% block lead %}
-<p style="margin:0 0 18px 0; font-size:15px; line-height:1.7; color:#aeb3aa;">
+<p style="margin:0 0 20px 0; font-size:15px; line-height:1.7; color:#c3c8c1; text-align:center;">
     You received a new booking request for
-    <strong style="color:#e7e8e3;">{{ service_title }}</strong> from
+    <strong style="color:#e2e3df;">{{ service_title }}</strong> from
     {{ customer_name }}.
 </p>
 {% endblock %}
@@ -25,7 +27,7 @@
 {% endblock %}
 
 {% block footer_note %}
-<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83;">
+<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83; text-align:center;">
     Please confirm or decline this request from your Provia provider dashboard.
 </p>
 {% endblock %}

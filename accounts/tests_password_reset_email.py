@@ -1,5 +1,6 @@
 from unittest import mock
 
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -8,6 +9,11 @@ from accounts.models import User
 
 class PasswordResetProviderTests(TestCase):
     """Password reset email must go through config.email_provider.send_email."""
+
+    def setUp(self):
+        # LocMemCache persists across tests in the same process, so clear it
+        # to avoid the password-reset rate limiter leaking between tests.
+        cache.clear()
 
     def _make_user(self):
         return User.objects.create_user(
@@ -50,8 +56,64 @@ class PasswordResetProviderTests(TestCase):
         self.assertNotIn("re_secret_123", payload)
 
 
+class PasswordResetRateLimitTests(TestCase):
+    """Password-reset requests are rate limited per client/IP."""
+
+    def setUp(self):
+        cache.clear()
+
+    def _make_user(self):
+        return User.objects.create_user(
+            username="rate_user",
+            email="rate_user@example.com",
+            password="OldPass12345!",
+            is_verified=True,
+        )
+
+    def test_emails_sent_up_to_limit_then_blocked(self):
+        self._make_user()
+        with mock.patch("accounts.forms.send_email") as spy:
+            for _ in range(3):
+                response = self.client.post(
+                    reverse("accounts:password_reset"),
+                    {"email": "rate_user@example.com"},
+                )
+                self.assertEqual(response.status_code, 302)
+            # 4th request is rate limited: no email sent, same redirect.
+            response = self.client.post(
+                reverse("accounts:password_reset"),
+                {"email": "rate_user@example.com"},
+            )
+            self.assertEqual(response.status_code, 302)
+        self.assertEqual(spy.call_count, 3)
+
+    def test_rate_limited_response_is_identical(self):
+        self._make_user()
+        with mock.patch("accounts.forms.send_email"):
+            for _ in range(3):
+                self.client.post(
+                    reverse("accounts:password_reset"),
+                    {"email": "rate_user@example.com"},
+                )
+            limited = self.client.post(
+                reverse("accounts:password_reset"),
+                {"email": "rate_user@example.com"},
+            )
+        # The rate-limited request must still redirect to the generic done page.
+        self.assertEqual(limited.status_code, 302)
+        self.assertEqual(
+            limited.url,
+            "/accounts/password-reset/done/",
+        )
+
+
 @override_settings(BREVO_API_KEY="re_test_key_456")
 class PasswordResetBrevoPathTests(TestCase):
+    def setUp(self):
+        # LocMemCache persists across tests in the same process, so clear it
+        # to avoid the password-reset rate limiter leaking between tests.
+        cache.clear()
+
     def _make_user(self, username, email):
         return User.objects.create_user(
             username=username,

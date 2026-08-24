@@ -2,8 +2,10 @@
 
 {% block title %}Your Provia booking was cancelled{% endblock %}
 
+{% block preheader %}Your booking for {{ service_title }} with {{ provider_name }} has been cancelled.{% endblock %}
+
 {% block eyebrow %}
-<p style="margin:14px 0 0 0; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#aeb3aa;">
+<p style="margin:20px 0 0 0; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#b4cdb8; text-align:center; font-weight:bold;">
     Booking Cancelled
 </p>
 {% endblock %}
@@ -11,10 +13,10 @@
 {% block heading %}Your booking was cancelled{% endblock %}
 
 {% block lead %}
-<p style="margin:0 0 18px 0; font-size:15px; line-height:1.7; color:#aeb3aa;">
-    Your booking for <strong style="color:#e7e8e3;">{{ service_title }}</strong> with
+<p style="margin:0 0 20px 0; font-size:15px; line-height:1.7; color:#c3c8c1; text-align:center;">
+    Your booking for <strong style="color:#e2e3df;">{{ service_title }}</strong> with
     {{ provider_name }} has been cancelled. The status is now
-    <strong style="color:#e7e8e3;">{{ status_display }}</strong>.
+    <strong style="color:#e2e3df;">{{ status_display }}</strong>.
 </p>
 {% endblock %}
 
@@ -25,7 +27,7 @@
 {% endblock %}
 
 {% block footer_note %}
-<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83;">
+<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83; text-align:center;">
     If you have questions about this cancellation, open your Provia account to review the details.
 </p>
 {% endblock %}

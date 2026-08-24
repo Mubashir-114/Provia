@@ -8,6 +8,9 @@ from django.utils.http import urlsafe_base64_encode
 from config.email_provider import send_email
 
 
+from notifications.email_utils import get_site_url
+
+
 class EmailVerificationService:
 
     @staticmethod
@@ -33,20 +36,20 @@ class EmailVerificationService:
 
         verification_url = request.build_absolute_uri(verification_path)
 
+        context = {
+            "user": user,
+            "verification_url": verification_url,
+            "site_url": get_site_url(),
+        }
+
         message = render_to_string(
             "accounts/email_verification.txt",
-            {
-                "user": user,
-                "verification_url": verification_url,
-            },
+            context,
         )
 
         html_message = render_to_string(
             "accounts/email_verification.html",
-            {
-                "user": user,
-                "verification_url": verification_url,
-            },
+            context,
         )
 
         send_email(

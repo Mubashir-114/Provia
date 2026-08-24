@@ -3,6 +3,7 @@ from django.urls import path
 
 from . import views
 from .forms import ProviaPasswordResetForm
+from .views import RateLimitedPasswordResetView
 
 app_name = "accounts"
 
@@ -12,7 +13,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
+        RateLimitedPasswordResetView.as_view(
             form_class=ProviaPasswordResetForm,
             template_name="accounts/password_reset.html",
             email_template_name="accounts/password_reset_email.txt",

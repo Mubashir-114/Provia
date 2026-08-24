@@ -1,106 +1,51 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify your Provia email</title>
-</head>
+{% extends "email/base_email.html" %}
+{% load i18n %}
+{% autoescape off %}
 
-<body style="margin:0; padding:0; background-color:#0d0f0d; color:#e7e8e3; font-family:Arial,Helvetica,sans-serif;">
+{% block title %}Verify your Provia email{% endblock %}
+
+{% block preheader %}Welcome to Provia. Please verify your email address to activate your account.{% endblock %}
+
+{% block eyebrow %}
+<p style="margin:20px 0 0 0; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#b4cdb8; text-align:center; font-weight:bold;">
+    Account Verification
+</p>
+{% endblock %}
+
+{% block heading %}Verify your email{% endblock %}
+
+{% block lead %}
+<p style="margin:0 0 20px 0; font-size:15px; line-height:1.7; color:#c3c8c1; text-align:center;">
+    Hello {{ user.first_name|default:user.username }}, welcome to Provia. Please verify your email address to activate your account.
+</p>
+{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 24px 0; font-size:15px; line-height:1.7; color:#e2e3df; text-align:center;">
+    Click the secure button below to verify your email address and finish setting up your account.
+</p>
+
+{% include "email/partials/cta_button.html" with url=verification_url label="Verify Email" %}
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="width:100%; margin:0; padding:32px 16px; background-color:#0d0f0d;">
+       style="width:100%; margin:28px 0 0 0; background-color:#121412; border:1px solid #2a2d2a; border-radius:6px;">
     <tr>
-        <td align="center">
-
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                   style="max-width:560px; width:100%; background-color:#151815; border:1px solid #343733;">
-
-                <tr>
-                    <td style="padding:32px 32px 24px 32px; border-bottom:1px solid #2a2d2a;">
-
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                                <td style="vertical-align:middle; padding-right:10px;">
-                                    {% if site_url %}
-                                    <img src="{{ site_url }}{% static 'images/branding/provia-logo.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
-                                    {% else %}
-                                    <img src="{% static 'images/branding/provia-logo.png' %}" alt="Provia" width="32" height="32" style="display:block; width:32px; height:32px; border-radius:6px; border:0;" />
-                                    {% endif %}
-                                </td>
-                                <td style="vertical-align:middle; font-size:14px; letter-spacing:2px; font-weight:bold; color:#dfc38f;">
-                                    PROVIA
-                                </td>
-                            </tr>
-                        </table>
-
-                        <h1 style="margin:18px 0 0 0; font-size:28px; line-height:1.25; color:#f0f1ec;">
-                            Verify your email
-                        </h1>
-
-                    </td>
-                </tr>
-
-                <tr>
-                    <td style="padding:32px;">
-
-                        <p style="margin:0 0 18px 0; font-size:16px; line-height:1.6; color:#e7e8e3;">
-                            Hello {{ user.first_name|default:user.username }},
-                        </p>
-
-                        <p style="margin:0 0 18px 0; font-size:15px; line-height:1.7; color:#aeb3aa;">
-                            Welcome to Provia. Please verify your email address
-                            to activate your account.
-                        </p>
-
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0"
-                               style="margin:28px 0;">
-                            <tr>
-                                <td style="background-color:#b4cdb8;">
-
-                                    <a href="{{ verification_url }}"
-                                       style="display:inline-block; padding:13px 22px; color:#111411; font-size:14px; font-weight:bold; text-decoration:none;">
-                                        Verify Email
-                                    </a>
-
-                                </td>
-                            </tr>
-                        </table>
-
-                        <p style="margin:0 0 10px 0; font-size:13px; line-height:1.6; color:#858b83;">
-                            If the button doesn't work, open this link:
-                        </p>
-
-                        <p style="margin:0 0 24px 0; font-size:12px; line-height:1.6; word-break:break-all;">
-                            <a href="{{ verification_url }}"
-                               style="color:#dfc38f; text-decoration:none;">
-                                {{ verification_url }}
-                            </a>
-                        </p>
-
-                        <p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83;">
-                            If you did not create this Provia account, you can safely ignore this email.
-                        </p>
-
-                    </td>
-                </tr>
-
-                <tr>
-                    <td style="padding:20px 32px; border-top:1px solid #2a2d2a;">
-
-                        <p style="margin:0; font-size:11px; color:#6f756d;">
-                            Provia Team
-                        </p>
-
-                    </td>
-                </tr>
-
-            </table>
-
+        <td style="padding:16px 20px;">
+            <p style="margin:0 0 6px 0; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#dfc38f; font-weight:bold;">
+                Didn't create an account?
+            </p>
+            <p style="margin:0; font-size:13px; line-height:1.6; color:#c3c8c1;">
+                If you did not create a Provia account, you can safely ignore this email.
+            </p>
         </td>
     </tr>
 </table>
+{% endblock %}
 
-</body>
-</html>
+{% block footer_note %}
+<p style="margin:0; padding-top:20px; border-top:1px solid #2a2d2a; font-size:13px; line-height:1.6; color:#858b83; text-align:center;">
+    This verification link is temporary and should only be used by you.
+</p>
+{% endblock %}
+
+{% endautoescape %}
