@@ -350,6 +350,12 @@ DEFAULT_FROM_EMAIL = env(
 )
 
 
+BYPASS_EMAIL_VERIFICATION = env.bool(
+    "BYPASS_EMAIL_VERIFICATION",
+    default=False,
+)
+
+
 # Brevo
 
 BREVO_API_KEY = env(

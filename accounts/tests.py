@@ -90,6 +90,7 @@ class SetupDevUsersCommandTests(TestCase):
 
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    BREVO_API_KEY="",
     ALLOWED_HOSTS=["testserver"],
 )
 class Phase2AuthenticationTests(TestCase):
@@ -135,6 +136,49 @@ class Phase2AuthenticationTests(TestCase):
         self.assertEqual(user.role, User.Role.PROVIDER)
         self.assertFalse(user.is_verified)
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(BYPASS_EMAIL_VERIFICATION=True)
+    def test_registration_with_bypass_enabled(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {
+                "username": "bypassed_user",
+                "email": "bypassed@example.com",
+                "first_name": "Bypass",
+                "last_name": "User",
+                "phone": "1234567890",
+                "role": User.Role.CUSTOMER,
+                "password1": "SecurePass123!",
+                "password2": "SecurePass123!",
+            },
+        )
+        user = User.objects.get(username="bypassed_user")
+        self.assertTrue(user.is_verified)
+        self.assertIn("_auth_user_id", self.client.session)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertRedirects(response, reverse("dashboard:customer"))
+
+    @override_settings(BYPASS_EMAIL_VERIFICATION=False)
+    def test_registration_with_bypass_disabled(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {
+                "username": "normal_user",
+                "email": "normal@example.com",
+                "first_name": "Normal",
+                "last_name": "User",
+                "phone": "1234567890",
+                "role": User.Role.CUSTOMER,
+                "password1": "SecurePass123!",
+                "password2": "SecurePass123!",
+            },
+        )
+        user = User.objects.get(username="normal_user")
+        self.assertFalse(user.is_verified)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertRedirects(response, reverse("accounts:verification_sent"))
 
     def test_03_admin_cannot_register(self):
         response = self.client.post(

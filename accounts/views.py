@@ -67,6 +67,24 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
 
+            if getattr(settings, "BYPASS_EMAIL_VERIFICATION", False):
+                user.is_verified = True
+                user.save(update_fields=["is_verified"])
+                login(request, user)
+                messages.success(
+                    request,
+                    "Account created successfully.",
+                )
+                if user.role == user.Role.PROVIDER:
+                    if ProviderProfile.objects.filter(user=user).exists():
+                        return redirect("dashboard:provider")
+                    return redirect("providers:profile")
+
+                if user.role == user.Role.ADMIN:
+                    return redirect("/admin/")
+
+                return redirect("dashboard:customer")
+
             try:
                 EmailVerificationService.send_verification_email(
                     user=user,
