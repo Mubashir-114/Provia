@@ -9,6 +9,7 @@ from django.contrib.auth.forms import (
 from django.template import loader
 
 from config.email_provider import send_email
+from notifications.email_utils import get_site_url
 
 from .models import User
 
@@ -105,6 +106,11 @@ class ProviaPasswordResetForm(PasswordResetForm):
         """Render the reset email with Django's secure token/URL context, but
         deliver it through the centralized Brevo-aware email provider instead
         of Django's SMTP backend."""
+        # Provide the canonical production origin so the email can build an
+        # absolute HTTPS asset URL for the Provia logo (Gmail cannot resolve
+        # relative /static/ paths).
+        context = {**context, "site_url": get_site_url()}
+
         subject = loader.render_to_string(subject_template_name, context)
         # Email subject *must not* contain newlines.
         subject = "".join(subject.splitlines())
