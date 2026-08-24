@@ -9,9 +9,10 @@ from .models import (
 class ServiceForm(forms.ModelForm):
     image = forms.ImageField(
         required=False,
+        help_text="Optional. Upload a photo representing your service (JPEG, PNG, WebP). If omitted, an appropriate category icon will be shown automatically.",
         widget=forms.ClearableFileInput(
             attrs={
-                "class": "w-full rounded-lg border px-4 py-3",
+                "class": "w-full rounded-lg border px-4 py-3 bg-[#131412] text-[#e9ebe7] border-[#343533]",
                 "accept": "image/jpeg,image/png,image/webp",
             }
         ),

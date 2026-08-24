@@ -2,6 +2,8 @@
 {% block title %}{{ page_title|default:"Service Form" }} — Provia{% endblock %}
 
 {% block content %}
+{% load cloudinary %}
+{% load service_tags %}
 <div class="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
   <div class="mb-6">
     {% include "components/back_button.html" with url_name="services:list" label="Back to My Services" %}
@@ -25,7 +27,23 @@
             {{ field.label }}
             {% if field.field.required %}<span class="text-[#dfc38f]">*</span>{% endif %}
           </label>
+
+          {% if field.name == "image" %}
+            {% if service and service.image %}
+              <div class="mb-3 flex items-center gap-4 rounded-lg border border-[#343533] bg-[#131412] p-3">
+                <div class="h-20 w-28 shrink-0 overflow-hidden rounded-md border border-[#343533]">
+                  {% include "components/service_media.html" with service=service height="h-20" container_class="w-28" %}
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[#e9ebe7]">Current Image</p>
+                  <p class="mt-0.5 text-[11px] text-[#6f756f]">Select a new file below to replace this image.</p>
+                </div>
+              </div>
+            {% endif %}
+          {% endif %}
+
           {{ field }}
+
           {% if field.help_text %}
             <p class="mt-1.5 text-xs text-[#6f756f]">{{ field.help_text }}</p>
           {% endif %}

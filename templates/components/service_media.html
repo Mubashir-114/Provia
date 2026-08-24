@@ -1,0 +1,24 @@
+{% load cloudinary %}
+{% load service_tags %}
+
+{% with height=height|default:"h-36" container_class=container_class|default:"w-full" %}
+<div class="relative overflow-hidden rounded-lg border border-[#343533] bg-[#121412] {{ height }} {{ container_class }} shrink-0">
+  {% if service.image %}
+    <img
+      src="{% cloudinary_url service.image width=800 height=500 crop='fill' %}"
+      alt="{{ service.title }} service"
+      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      loading="lazy"
+    />
+  {% else %}
+    <div class="flex h-full w-full flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-[#1a1c1a] to-[#121412] group">
+      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#292a28]/80 border border-[#343533] text-[#b4cdb8] shadow-inner transition-transform duration-200 group-hover:scale-110 group-hover:border-[#b4cdb8]/40 group-hover:text-[#dfc38f]">
+        {% category_icon_svg service.category "h-6 w-6 text-current" %}
+      </div>
+      <span class="mt-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#a4aba4] truncate max-w-full px-2">
+        {{ service.category.name|default:"Service" }}
+      </span>
+    </div>
+  {% endif %}
+</div>
+{% endwith %}

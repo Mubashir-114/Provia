@@ -11,9 +11,7 @@
   <div class="grid gap-8 lg:grid-cols-3">
     <!-- Main Content -->
     <div class="lg:col-span-2 space-y-6">
-      {% if service.image %}
-        <img src="{% cloudinary_url service.image width=1200 height=800 crop='limit' %}" alt="{{ service.title }}" class="w-full rounded-xl border border-[#343533] object-cover">
-      {% endif %}
+      {% include "components/service_media.html" with service=service height="h-56 sm:h-72" %}
       <div class="rounded-xl border border-[#343533] bg-[#1b1c1a] p-6 sm:p-8">
         <div class="flex items-center justify-between gap-3">
           <span class="inline-flex items-center rounded-md bg-[#292a28] border border-[#343533] px-3 py-1 text-xs font-semibold text-[#b4cdb8]">

@@ -845,9 +845,9 @@ class ServiceImageTests(TestCase):
             is_verified=True,
         )
 
-        self.category = ServiceCategory.objects.create(
-            name="Cleaning",
+        self.category, _ = ServiceCategory.objects.get_or_create(
             slug="cleaning",
+            defaults={"name": "Cleaning"},
         )
 
         self.service = Service.objects.create(
@@ -1078,3 +1078,61 @@ class ServiceImageTests(TestCase):
         self.assertRedirects(response, reverse("services:list"))
         self.service.refresh_from_db()
         self.assertTrue(bool(self.service.image))
+
+
+class CategoryIconSystemTests(TestCase):
+
+    def test_category_icon_normalization_and_fallback(self):
+        from services.category_icons import get_category_icon_svg, normalize_category_key
+
+        # Known category
+        svg_cleaning = get_category_icon_svg("Cleaning")
+        self.assertIn("<svg", svg_cleaning)
+
+        # Slug match
+        svg_plumbing = get_category_icon_svg("plumbing")
+        self.assertIn("<svg", svg_plumbing)
+
+        # Keyword match
+        svg_carpenter = get_category_icon_svg("Custom Wood Carpenter")
+        self.assertEqual(normalize_category_key("Custom Wood Carpenter"), "carpentry")
+
+        # Unknown legacy category fallback
+        svg_unknown = get_category_icon_svg("Alien Quantum Service 99")
+        self.assertIn("<svg", svg_unknown)
+        self.assertEqual(normalize_category_key("Alien Quantum Service 99"), "other-services")
+
+    def test_service_media_component_renders_fallback_icon_when_no_image(self):
+        from accounts.models import User
+
+        provider_user = User.objects.create_user(
+            username="icon_provider",
+            email="icon_provider@example.com",
+            password="StrongPassword123!",
+            role=User.Role.PROVIDER,
+            is_verified=True,
+        )
+        provider = ProviderProfile.objects.create(
+            user=provider_user,
+            business_name="Icon Provider Pro",
+        )
+        category, _ = ServiceCategory.objects.get_or_create(
+            slug="electrical",
+            defaults={"name": "Electrical"},
+        )
+        service = Service.objects.create(
+            provider=provider,
+            category=category,
+            title="Electrical Repair",
+            description="Fixing outlets and wiring.",
+            price=Decimal("800.00"),
+            duration_minutes=45,
+            is_published=True,
+        )
+
+        response = self.client.get(reverse("services:public_detail", kwargs={"pk": service.pk}))
+        self.assertEqual(response.status_code, 200)
+
+        # Verify fallback category icon rendered and no broken image tag
+        self.assertContains(response, "<svg")
+        self.assertContains(response, "Electrical")
