@@ -1,6 +1,6 @@
 <!-- HEADER BANNER -->
 <p align="center">
-  <img src="static/images/branding/provia-banner.png" width="450" alt="Provia Banner - Book • Connect • Trust" style="border-radius: 20px;" />
+  <img src="static/images/branding/provia-logo.png" width="450" alt="Provia Logo - Book • Connect • Trust" style="border-radius: 20px;" />
 </p>
 
 <div align="center">

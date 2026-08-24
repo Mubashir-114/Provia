@@ -66,13 +66,13 @@ def send_transactional_email(subject, template_prefix, context, to):
         html_body = render_to_string(f"{template_prefix}.html", context)
 
         attachments = None
-        logo_path = find("images/branding/provia-banner.jpg")
+        logo_path = find("images/branding/provia-logo.png")
         if logo_path:
             with open(logo_path, "rb") as f:
                 logo_data = f.read()
             attachments = [
                 {
-                    "filename": "provia-brand-icon.jpg",
+                    "filename": "provia-brand-icon.png",
                     "content": logo_data,
                     "content_id": "provia-brand-icon",
                     "disposition": "inline",

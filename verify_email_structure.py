@@ -67,7 +67,7 @@ try:
     email.attach_alternative(html_body, "text/html")
     
     # Attach logo
-    logo_path = find("images/branding/provia-brand-icon.png")
+    logo_path = find("images/branding/provia-logo.png")
     if logo_path:
         with open(logo_path, "rb") as f:
             logo_data = f.read()
